@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>数据看板</title>
+  <link rel="stylesheet" href="../公共/design-system/design-system.css">
+  <link rel="stylesheet" href="../公共/styles/main.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="运营端.css">
+  <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/scripts/mock-api.js"></script>
+  <script src="../公共/lib/echarts/echarts.min.js"></script>
+
+  <style>
+    .board { padding: var(--space-lg); }
+
+    /* ---- KPI 卡片 ---- */
+    .kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: var(--space-lg); }
+    .kpi-card {
+      display: flex; flex-direction: row; align-items: center; gap: 12px;
+      background: #fff; border-radius: var(--radius-lg); padding: 12px 16px;
+      box-shadow: var(--shadow-sm); position: relative; overflow: hidden;
+    }
+    .kpi-card:hover { box-shadow: var(--shadow-md); transition: box-shadow var(--transition-fast); }
+    .kpi-icon {
+      width: 48px; height: 48px; border-radius: 12px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; line-height: 1;
+    }
+    .kpi-icon.blue   { background: #EFF6FF; color: #2563EB; }
+    .kpi-icon.green  { background: #ECFDF5; color: #10B981; }
+    .kpi-icon.orange { background: #FFFBEB; color: #F59E0B; }
+    .kpi-icon.purple { background: #F5F3FF; color: #8B5CF6; }
+    .kpi-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+    .kpi-label { font-size: var(--font-size-sm); color: var(--color-text-secondary); line-height: 1.3; }
+    .kpi-value { font-size: var(--font-size-lg); font-weight: var(--font-weight-bold); color: var(--color-text-primary); line-height: 1.3; }
+    .kpi-trend { font-size: var(--font-size-xs); line-height: 1.3; display: flex; align-items: center; gap: 3px; }
+    .kpi-trend.up { color: var(--color-success); }
+    .kpi-trend.down { color: var(--color-danger); }
+
+    /* ---- 图表卡片 ---- */
+    .chart-card { background: #fff; border-radius: var(--radius-lg); box-shadow: var(--shadow-sm); overflow: hidden; }
+    .chart-header { padding: var(--space-md) var(--space-lg); border-bottom: 1px solid var(--color-border-light); display: flex; align-items: center; justify-content: space-between; }
+    .chart-title { font-size: 15px; font-weight: 600; }
+    .chart-body { padding: var(--space-lg); }
+    .chart-wrap { width: 100%; height: 280px; }
+    .board-row { display: grid; grid-template-columns: 2fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg); }
+    .board-row-eq { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-md); margin-bottom: var(--space-lg); }
+
+    /* ---- 排行榜 ---- */
+    .rank-list { display: flex; flex-direction: column; gap: var(--space-sm); }
+    .rank-item { display: flex; align-items: center; gap: var(--space-sm); padding: 8px 0; border-bottom: 1px solid var(--color-border-light); }
+    .rank-item:last-child { border-bottom: none; }
+    .rank-num {
+      width: 28px; height: 28px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 700; background: var(--color-bg-hover); color: var(--color-text-secondary);
+    }
+    .rank-num.top1 { background: #FEF2F2; color: #EF4444; }
+    .rank-num.top2 { background: #FFF7ED; color: #F59E0B; }
+    .rank-num.top3 { background: #FFFBEB; color: #D97706; }
+    .rank-icon {
+      width: 36px; height: 36px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .rank-name { flex: 1; font-size: 14px; font-weight: 500; }
+    .rank-meta { font-size: 12px; color: var(--color-text-secondary); }
+    .rank-value { font-size: 15px; font-weight: 700; color: var(--color-text-primary); }
+
+    /* ---- 时间选择器 ---- */
+    .time-select {
+      height: 28px; padding: 0 26px 0 10px; border: 1px solid var(--color-border);
+      border-radius: var(--radius-sm); font-size: 13px; appearance: none; -webkit-appearance: none;
+      background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath d='M1.5 3.5l3.5 3.5 3.5-3.5' stroke='%236B7280' stroke-width='1.2' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 8px center;
+      cursor: pointer; outline: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="board">
+    <!-- KPI 卡片 -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-icon blue"><i class="fa fa-money" aria-hidden="true"></i></div>
+        <div class="kpi-info">
+          <div class="kpi-label">总营收</div>
+          <div class="kpi-value" id="kpiRevenue">-</div>
+          <div class="kpi-trend up"><i class="fa fa-arrow-up" aria-hidden="true"></i> 15.3% 较上周</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon green"><i class="fa fa-file-text-o" aria-hidden="true"></i></div>
+        <div class="kpi-info">
+          <div class="kpi-label">订单量</div>
+          <div class="kpi-value" id="kpiOrders">-</div>
+          <div class="kpi-trend up"><i class="fa fa-arrow-up" aria-hidden="true"></i> 8.2% 较上周</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon orange"><i class="fa fa-user-circle-o" aria-hidden="true"></i></div>
+        <div class="kpi-info">
+          <div class="kpi-label">活跃用户</div>
+          <div class="kpi-value" id="kpiUsers">-</div>
+          <div class="kpi-trend up"><i class="fa fa-arrow-up" aria-hidden="true"></i> 12.5% 较上周</div>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-icon purple"><i class="fa fa-pie-chart" aria-hidden="true"></i></div>
+        <div class="kpi-info">
+          <div class="kpi-label">转化率</div>
+          <div class="kpi-value">3.8%</div>
+          <div class="kpi-trend down"><i class="fa fa-arrow-down" aria-hidden="true"></i> 0.5% 较上周</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 销售趋势 + 商品分类占比 -->
+    <div class="board-row">
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title"><i class="fa fa-bar-chart" aria-hidden="true"></i> 近7日销售趋势</span>
+          <select id="timeRange" class="time-select">
+            <option value="7">最近7天</option>
+            <option value="30">最近30天</option>
+          </select>
+        </div>
+        <div class="chart-body">
+          <div class="chart-wrap" id="salesChart"></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title"><i class="fa fa-pie-chart" aria-hidden="true"></i> 商品分类占比</span>
+        </div>
+        <div class="chart-body">
+          <div class="chart-wrap" id="categoryChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 活动转化漏斗 + 用户增长趋势 -->
+    <div class="board-row-eq">
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title"><i class="fa fa-filter" aria-hidden="true"></i> 活动转化漏斗</span>
+        </div>
+        <div class="chart-body">
+          <div class="chart-wrap" id="funnelChart"></div>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-header">
+          <span class="chart-title"><i class="fa fa-area-chart" aria-hidden="true"></i> 用户增长趋势</span>
+          <span style="font-size:12px;color:var(--color-text-secondary);">近7日</span>
+        </div>
+        <div class="chart-body">
+          <div class="chart-wrap" id="growthChart"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 热销商品排行 -->
+    <div class="chart-card">
+      <div class="chart-header">
+        <span class="chart-title"><i class="fa fa-trophy" aria-hidden="true"></i> 热销商品 TOP 5</span>
+        <span style="font-size:12px;color:var(--color-text-secondary);">按销量排序</span>
+      </div>
+      <div class="chart-body">
+        <div class="rank-list" id="rankList"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var C = {
+        primary: '#2563EB', primaryLight: '#60A5FA', primaryBg: '#DBEAFE',
+        success: '#10B981', successLight: '#6EE7B7',
+        warning: '#F59E0B', danger: '#EF4444',
+        info: '#3B82F6', purple: '#8B5CF6', pink: '#EC4899', teal: '#14B8A6', sky: '#0EA5E9',
+        textSec: '#6B7280', border: '#E5E7EB', splitLine: '#F3F4F6'
+      };
+      var charts = [];
+      function regChart(dom, option) {
+        var c = echarts.init(dom);
+        c.setOption(option);
+        charts.push(c);
+        return c;
+      }
+      window.addEventListener('resize', function () { charts.forEach(function (c) { c.resize(); }); });
+
+      /* ---- KPI 数据 ---- */
+      MockAPI.getStats().then(function (stats) {
+        document.getElementById('kpiRevenue').textContent = Common.formatMoney(stats.totalRevenue);
+        document.getElementById('kpiOrders').textContent = Common.formatNumber(stats.totalOrders);
+        document.getElementById('kpiUsers').textContent = Common.formatNumber(stats.activeUsers);
+      });
+
+      /* ---- 1. 销售趋势：柱状图 + 折线图 ---- */
+      var days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+      var salesValues = [3200, 4100, 3800, 5200, 4800, 6800, 5900];
+      var orderValues = [28, 35, 32, 45, 40, 58, 49];
+
+      regChart(document.getElementById('salesChart'), {
+        tooltip: {
+          trigger: 'axis', axisPointer: { type: 'shadow' },
+          formatter: function (params) {
+            return params[0].axisValue + '<br/>' + params.map(function (p) {
+              return p.marker + ' ' + p.seriesName + ': ' + (p.seriesIndex === 0 ? '¥' : '') + Common.formatNumber(p.value) + (p.seriesIndex === 0 ? '' : ' 单');
+            }).join('<br/>');
+          }
+        },
+        legend: { data: ['销售额', '订单量'], bottom: 0, textStyle: { fontSize: 12, color: C.textSec } },
+        grid: { left: '3%', right: '4%', bottom: '14%', top: '8%', containLabel: true },
+        xAxis: { type: 'category', data: days, axisLine: { lineStyle: { color: C.border } }, axisLabel: { color: C.textSec }, axisTick: { show: false } },
+        yAxis: [
+          {
+            type: 'value', name: '¥', nameTextStyle: { color: C.textSec },
+            axisLabel: { formatter: function (v) { return (v / 1000).toFixed(0) + 'k'; }, color: C.textSec },
+            splitLine: { lineStyle: { color: C.splitLine } }, axisLine: { show: false }, axisTick: { show: false }
+          },
+          {
+            type: 'value', name: '单', nameTextStyle: { color: C.textSec },
+            splitLine: { show: false }, axisLabel: { color: C.textSec }, axisLine: { show: false }, axisTick: { show: false }
+          }
+        ],
+        series: [
+          {
+            name: '销售额', type: 'bar', barWidth: '40%', yAxisIndex: 0,
+            itemStyle: {
+              borderRadius: [4, 4, 0, 0],
+              color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: C.primary }, { offset: 1, color: C.primaryLight }])
+            },
+            data: salesValues,
+            label: { show: true, position: 'top', fontSize: 11, color: C.textSec, formatter: function (p) { return (p.value / 1000).toFixed(1) + 'k'; } }
+          },
+          {
+            name: '订单量', type: 'line', yAxisIndex: 1,
+            smooth: true, lineStyle: { width: 2, color: C.success },
+            itemStyle: { color: C.success, borderColor: '#fff', borderWidth: 2 },
+            symbol: 'circle', symbolSize: 7,
+            data: orderValues
+          }
+        ]
+      });
+
+      // 时间范围切换
+      document.getElementById('timeRange').addEventListener('change', function () {
+        var v = this.value;
+        Common.toast('已切换到「最近' + (v === '7' ? '7' : '30') + '天」视图', 'info');
+      });
+
+      /* ---- 2. 商品分类占比环形图 ---- */
+      regChart(document.getElementById('categoryChart'), {
+        tooltip: { trigger: 'item', formatter: '{b}: {c}件 ({d}%)' },
+        legend: { bottom: 0, textStyle: { fontSize: 11, color: C.textSec }, itemWidth: 10, itemHeight: 10 },
+        series: [{
+          name: '商品分类', type: 'pie', radius: ['42%', '68%'], center: ['50%', '42%'],
+          avoidLabelOverlap: true,
+          itemStyle: { borderColor: '#fff', borderWidth: 2, borderRadius: 4 },
+          label: { show: true, fontSize: 12, color: C.textSec, formatter: '{d}%' },
+          labelLine: { length: 8, length2: 8 },
+          emphasis: { label: { fontSize: 14, fontWeight: 'bold' }, scaleSize: 6 },
+          data: [
+            { value: 350, name: '智能穿戴', itemStyle: { color: C.primary } },
+            { value: 250, name: '电脑外设', itemStyle: { color: C.success } },
+            { value: 200, name: '音频设备', itemStyle: { color: C.warning } },
+            { value: 150, name: '其他',     itemStyle: { color: C.purple } }
+          ]
+        }]
+      });
+
+      /* ---- 3. 活动转化漏斗图 ---- */
+      regChart(document.getElementById('funnelChart'), {
+        tooltip: { trigger: 'item', formatter: '{b}: {c} 人' },
+        series: [{
+          name: '转化漏斗', type: 'funnel',
+          left: '10%', right: '10%', top: '5%', bottom: '5%',
+          minSize: '30%', maxSize: '100%',
+          sort: 'descending', gap: 4,
+          label: { show: true, position: 'inside', fontSize: 13, fontWeight: 600, color: '#fff' },
+          labelLine: { show: false },
+          itemStyle: { borderWidth: 0 },
+          emphasis: { label: { fontSize: 15 } },
+          data: [
+            { value: 12000, name: '浏览活动', itemStyle: { color: C.primary } },
+            { value: 5800,  name: '点击商品', itemStyle: { color: C.info } },
+            { value: 3200,  name: '加入购物车', itemStyle: { color: C.teal } },
+            { value: 1850,  name: '提交订单', itemStyle: { color: C.warning } },
+            { value: 1420,  name: '支付完成', itemStyle: { color: C.success } }
+          ]
+        }]
+      });
+
+      /* ---- 4. 用户增长趋势面积图 ---- */
+      regChart(document.getElementById('growthChart'), {
+        tooltip: { trigger: 'axis', formatter: function (p) { return p[0].axisValue + '<br/>' + p.map(function (s) { return s.marker + ' ' + s.seriesName + ': ' + Common.formatNumber(s.value) + ' 人'; }).join('<br/>'); } },
+        legend: { data: ['新增用户', '活跃用户'], bottom: 0, textStyle: { fontSize: 12, color: C.textSec } },
+        grid: { left: '3%', right: '4%', bottom: '14%', top: '8%', containLabel: true },
+        xAxis: { type: 'category', data: days, boundaryGap: false, axisLine: { lineStyle: { color: C.border } }, axisLabel: { color: C.textSec }, axisTick: { show: false } },
+        yAxis: { type: 'value', axisLabel: { color: C.textSec }, splitLine: { lineStyle: { color: C.splitLine } }, axisLine: { show: false }, axisTick: { show: false } },
+        series: [
+          {
+            name: '新增用户', type: 'line', smooth: true,
+            lineStyle: { width: 2, color: C.purple },
+            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(139,92,246,0.25)' }, { offset: 1, color: 'rgba(139,92,246,0.02)' }]) },
+            symbol: 'circle', symbolSize: 6,
+            itemStyle: { color: C.purple, borderColor: '#fff', borderWidth: 2 },
+            data: [120, 145, 132, 168, 155, 198, 182]
+          },
+          {
+            name: '活跃用户', type: 'line', smooth: true,
+            lineStyle: { width: 2, color: C.sky },
+            areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(14,165,233,0.20)' }, { offset: 1, color: 'rgba(14,165,233,0.02)' }]) },
+            symbol: 'circle', symbolSize: 6,
+            itemStyle: { color: C.sky, borderColor: '#fff', borderWidth: 2 },
+            data: [820, 910, 880, 1050, 980, 1280, 1150]
+          }
+        ]
+      });
+
+      /* ---- 5. 热销商品 TOP 5 ---- */
+      var products = MockAPI.raw.products.slice().sort(function (a, b) { return b.sales - a.sales; }).slice(0, 5);
+      var rankColors = ['#EFF6FF', '#ECFDF5', '#FFFBEB', '#F5F3FF', '#FFF1F2'];
+      var rankIconColors = ['#2563EB', '#10B981', '#F59E0B', '#8B5CF6', '#EC4899'];
+      var rankList = document.getElementById('rankList');
+      rankList.innerHTML = products.map(function (p, i) {
+        var numClass = i === 0 ? 'top1' : (i === 1 ? 'top2' : (i === 2 ? 'top3' : ''));
+        var iconBg = rankColors[i] || 'var(--color-bg-hover)';
+        var iconColor = rankIconColors[i] || 'var(--color-text-secondary)';
+        return '<div class="rank-item">' +
+          '<div class="rank-num ' + numClass + '">' + (i + 1) + '</div>' +
+          '<div class="rank-icon" style="background:' + iconBg + ';color:' + iconColor + ';"><i class="fa fa-cube"></i></div>' +
+          '<div class="rank-name">' + p.name + '</div>' +
+          '<span class="rank-meta"><i class="fa fa-shopping-cart" aria-hidden="true"></i> 销量</span>' +
+          '<div class="rank-value">' + Common.formatNumber(p.sales) + '</div>' +
+        '</div>';
+      }).join('');
+    })();
+  </script>
+</body>
+</html>

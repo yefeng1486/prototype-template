@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0">
+  <title>我的</title>
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    html::-webkit-scrollbar { display: none; }
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 15px; color: #1C1C1E; background: #F2F2F7;
+      line-height: 1.4; width: 390px; margin: 0 auto; min-height: 100vh;
+      overflow-y: auto; overflow-x: hidden;
+    }
+    body::-webkit-scrollbar { display: none; }
+    body { scrollbar-width: none; -ms-overflow-style: none; }
+    .profile-top {
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      padding: 24px 20px 28px; color: #FFF;
+      display: flex; align-items: center; gap: 16px;
+    }
+    .profile-avatar {
+      width: 64px; height: 64px; border-radius: 50%;
+      background: rgba(255,255,255,0.3);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 28px; flex-shrink: 0;
+      border: 2px solid rgba(255,255,255,0.5);
+    }
+    .profile-info { flex: 1; }
+    .profile-nickname { font-size: 20px; font-weight: 600; margin-bottom: 4px; }
+    .profile-id { font-size: 13px; opacity: 0.8; }
+    .profile-qrcode { font-size: 24px; opacity: 0.8; }
+
+    .profile-stats {
+      display: flex; margin: -14px 20px 0;
+      background: #FFF; border-radius: 12px;
+      padding: 16px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    .profile-stat-item {
+      flex: 1; text-align: center;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+    .profile-stat-item + .profile-stat-item { border-left: 0.5px solid #E5E5EA; }
+    .profile-stat-item .num { font-size: 20px; font-weight: 700; color: #1C1C1E; }
+    .profile-stat-item .label { font-size: 12px; color: #8E8E93; }
+
+    .section-card {
+      background: #FFF; border-radius: 12px;
+      margin: 16px 20px; overflow: hidden;
+    }
+    .section-card-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 16px; border-bottom: 0.5px solid #F2F2F7;
+    }
+    .section-card-header .title { font-size: 15px; font-weight: 600; }
+    .section-card-header .more { font-size: 13px; color: #8E8E93; }
+
+    .order-icons { display: flex; padding: 8px 0; }
+    .order-icon-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 6px; padding: 8px 0;
+      position: relative;
+    }
+    .order-icon-item i { font-size: 22px; color: #FF6B6B; }
+    .order-icon-item span { font-size: 12px; color: #1C1C1E; }
+    .order-icon-item .badge {
+      position: absolute; top: 2px; left: 54%;
+      background: #FF3B30; color: #FFF; font-size: 10px;
+      padding: 1px 5px; border-radius: 10px; min-width: 16px; text-align: center;
+      line-height: 1.4;
+    }
+
+    .m-list-item { display: flex; align-items: center; gap: 14px; padding: 14px 16px; }
+    .m-list-item + .m-list-item { border-top: 0.5px solid #F2F2F7; }
+    .m-list-icon-bg { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #FFF; font-size: 14px; flex-shrink: 0; }
+    .ib-1 { background: #FF6B6B; }
+    .ib-2 { background: #FF9500; }
+    .ib-3 { background: #5AC8FA; }
+    .ib-4 { background: #34C759; }
+    .ib-5 { background: #AF52DE; }
+    .ib-6 { background: #FF3B30; }
+    .ib-7 { background: #8E8E93; }
+    .m-list-text { flex: 1; font-size: 15px; }
+    .m-list-arrow { color: #C7C7CC; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+  <div class="profile-top">
+    <div class="profile-avatar"><i class="fa fa-user"></i></div>
+    <div class="profile-info">
+      <div class="profile-nickname">Hi~ 欢迎你</div>
+      <div class="profile-id">ID: M20240001</div>
+    </div>
+    <div class="profile-qrcode"><i class="fa fa-qrcode"></i></div>
+  </div>
+
+  <div class="profile-stats">
+    <div class="profile-stat-item"><span class="num">23</span><span class="label">收藏</span></div>
+    <div class="profile-stat-item"><span class="num">128</span><span class="label">足迹</span></div>
+    <div class="profile-stat-item"><span class="num">6</span><span class="label">优惠券</span></div>
+    <div class="profile-stat-item"><span class="num">¥568</span><span class="label">积分</span></div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-card-header">
+      <span class="title">我的订单</span>
+      <span class="more">全部订单 <i class="fa fa-angle-right"></i></span>
+    </div>
+    <div class="order-icons">
+      <div class="order-icon-item">
+        <i class="fa fa-credit-card"></i><span class="badge">2</span>
+        <span>待付款</span>
+      </div>
+      <div class="order-icon-item">
+        <i class="fa fa-truck"></i><span class="badge">3</span>
+        <span>待发货</span>
+      </div>
+      <div class="order-icon-item">
+        <i class="fa fa-cube"></i>
+        <span>待收货</span>
+      </div>
+      <div class="order-icon-item">
+        <i class="fa fa-commenting-o"></i>
+        <span>待评价</span>
+      </div>
+      <div class="order-icon-item">
+        <i class="fa fa-refresh"></i>
+        <span>售后</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="m-list-item">
+      <div class="m-list-icon-bg ib-1"><i class="fa fa-map-marker"></i></div>
+      <div class="m-list-text">收货地址</div>
+      <div class="m-list-arrow"><i class="fa fa-angle-right"></i></div>
+    </div>
+    <div class="m-list-item">
+      <div class="m-list-icon-bg ib-2"><i class="fa fa-credit-card"></i></div>
+      <div class="m-list-text">我的钱包</div>
+      <div class="m-list-arrow"><i class="fa fa-angle-right"></i></div>
+    </div>
+    <div class="m-list-item">
+      <div class="m-list-icon-bg ib-3"><i class="fa fa-heart-o"></i></div>
+      <div class="m-list-text">我的收藏</div>
+      <div class="m-list-arrow"><i class="fa fa-angle-right"></i></div>
+    </div>
+    <div class="m-list-item">
+      <div class="m-list-icon-bg ib-4"><i class="fa fa-history"></i></div>
+      <div class="m-list-text">浏览记录</div>
+      <div class="m-list-arrow"><i class="fa fa-angle-right"></i></div>
+    </div>
+  </div>
+
+  <div class="section-card" style="margin-bottom:20px;">
+    <div class="m-list-item">
+      <div class="m-list-icon-bg ib-5"><i class="fa fa-headphones"></i></div>
+      <div class="m-list-text">客服中心</div>
+      <div class="m-list-arrow"><i class="fa fa-angle-right"></i></div>
+    </div>
+    <div class="m-list-item">
+      <div class="m-list-icon-bg ib-6"><i class="fa fa-bullhorn"></i></div>
+      <div class="m-list-text">意见反馈</div>
+      <div class="m-list-arrow"><i class="fa fa-angle-right"></i></div>
+    </div>
+    <div class="m-list-item">
+      <div class="m-list-icon-bg ib-7"><i class="fa fa-cog"></i></div>
+      <div class="m-list-text">设置</div>
+      <div class="m-list-arrow"><i class="fa fa-angle-right"></i></div>
+    </div>
+  </div>
+
+</body>
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0">
+  <title>购物车</title>
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    html::-webkit-scrollbar { display: none; }
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 15px; color: #1C1C1E; background: #F2F2F7;
+      line-height: 1.4; width: 390px; margin: 0 auto; min-height: 100vh;
+      padding-bottom: 80px;
+      overflow-y: auto; overflow-x: hidden;
+    }
+    body::-webkit-scrollbar { display: none; }
+    body { scrollbar-width: none; -ms-overflow-style: none; }
+
+    .cart-header {
+      padding: 16px 20px; background: #FFF;
+      font-size: 17px; font-weight: 600;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .cart-header .edit-btn { font-size: 14px; color: #FF6B6B; font-weight: 400; }
+    .cart-shop {
+      background: #FFF; border-radius: 12px;
+      margin: 8px 20px; overflow: hidden;
+    }
+    .cart-shop-header {
+      display: flex; align-items: center; gap: 8px;
+      padding: 12px 16px; border-bottom: 0.5px solid #E5E5EA;
+      font-size: 14px; font-weight: 600;
+    }
+    .cart-shop-header i { color: #FF6B6B; }
+    .cart-item {
+      display: flex; align-items: center; gap: 12px;
+      padding: 12px 16px;
+    }
+    .cart-item + .cart-item { border-top: 0.5px solid #F2F2F7; }
+    .cb {
+      width: 22px; height: 22px; border-radius: 50%;
+      border: 2px solid #D1D1D6; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; color: #FFF; transition: all 0.2s;
+    }
+    .cb.checked { background: #FF6B6B; border-color: #FF6B6B; }
+    .cart-item-img {
+      width: 80px; height: 80px; border-radius: 8px; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; color: #FFF;
+    }
+    .ci-1 { background: linear-gradient(135deg, #FFE0E0, #FFB3B3); }
+    .ci-2 { background: linear-gradient(135deg, #FFF3E0, #FFD699); }
+    .ci-3 { background: linear-gradient(135deg, #E0F0FF, #B3D9FF); }
+    .cart-item-info { flex: 1; min-width: 0; }
+    .cart-item-info .ci-name { font-size: 14px; margin-bottom: 4px; }
+    .cart-item-info .ci-spec { font-size: 12px; color: #8E8E93; margin-bottom: 8px; }
+    .cart-item-info .ci-bottom { display: flex; align-items: center; justify-content: space-between; }
+    .cart-item-info .ci-price { font-size: 16px; font-weight: 700; color: #FF6B6B; }
+    .qty-stepper {
+      display: flex; align-items: center; gap: 0;
+      border: 0.5px solid #E5E5EA; border-radius: 6px; overflow: hidden;
+    }
+    .qty-stepper button {
+      width: 28px; height: 28px; border: none; background: #F9F9F9;
+      font-size: 16px; color: #1C1C1E; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .qty-stepper span { width: 32px; text-align: center; font-size: 14px; }
+    .cart-bottom {
+      position: fixed; bottom: 0; left: 50%; transform: translateX(-50%);
+      width: 390px; background: rgba(255,255,255,0.95);
+      backdrop-filter: blur(20px); border-top: 0.5px solid #E5E5EA;
+      padding: 10px 20px 30px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .cart-bottom .total { flex: 1; text-align: right; }
+    .cart-bottom .total .sum { font-size: 18px; font-weight: 700; color: #FF6B6B; }
+    .cart-bottom .total .hint { font-size: 11px; color: #8E8E93; }
+    .checkout-btn {
+      padding: 10px 28px; background: #FF6B6B; color: #FFF;
+      border: none; border-radius: 22px; font-size: 14px; font-weight: 600; cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="cart-header">
+    购物车
+    <span class="edit-btn">编辑</span>
+  </div>
+
+  <div class="cart-shop">
+    <div class="cart-shop-header">
+      <input type="checkbox" checked style="accent-color:#FF6B6B;"> <i class="fa fa-shopping-bag"></i> 官方自营旗舰店
+    </div>
+    <div class="cart-item">
+      <div class="cb checked"><i class="fa fa-check"></i></div>
+      <div class="cart-item-img ci-1"><i class="fa fa-headphones"></i></div>
+      <div class="cart-item-info">
+        <div class="ci-name">蓝牙降噪耳机 Pro</div>
+        <div class="ci-spec">颜色：午夜黑</div>
+        <div class="ci-bottom">
+          <span class="ci-price">¥299</span>
+          <div class="qty-stepper">
+            <button>-</button><span>1</span><button>+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="cart-item">
+      <div class="cb checked"><i class="fa fa-check"></i></div>
+      <div class="cart-item-img ci-2"><i class="fa fa-coffee"></i></div>
+      <div class="cart-item-info">
+        <div class="ci-name">手冲咖啡套装礼盒</div>
+        <div class="ci-spec">规格：6杯装</div>
+        <div class="ci-bottom">
+          <span class="ci-price">¥89</span>
+          <div class="qty-stepper">
+            <button>-</button><span>2</span><button>+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cart-shop">
+    <div class="cart-shop-header">
+      <input type="checkbox" checked style="accent-color:#FF6B6B;"> <i class="fa fa-star"></i> 优选生活馆
+    </div>
+    <div class="cart-item">
+      <div class="cb checked"><i class="fa fa-check"></i></div>
+      <div class="cart-item-img ci-3"><i class="fa fa-camera-retro"></i></div>
+      <div class="cart-item-info">
+        <div class="ci-name">复古胶片相机</div>
+        <div class="ci-spec">套餐：基础套装</div>
+        <div class="ci-bottom">
+          <span class="ci-price">¥458</span>
+          <div class="qty-stepper">
+            <button>-</button><span>1</span><button>+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cart-bottom">
+    <div style="display:flex;align-items:center;gap:8px;font-size:13px;">
+      <input type="checkbox" checked style="accent-color:#FF6B6B;"> 全选
+    </div>
+    <div class="total">
+      <span class="hint">合计: </span>
+      <span class="sum">¥935</span>
+    </div>
+    <button class="checkout-btn">结算(3)</button>
+  </div>
+
+</body>
+</html>

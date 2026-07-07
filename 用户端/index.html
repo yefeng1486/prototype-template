@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户端 — 商城首页</title>
+
+  <!-- ===== 公共 CSS ===== -->
+  <link rel="stylesheet" href="../公共/design-system/design-system.css">
+  <link rel="stylesheet" href="../公共/styles/main.css">
+
+  <!-- ===== Font Awesome 4.7.0（本地） ===== -->
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+
+  <!-- ===== 用户端特有样式 ===== -->
+  <link rel="stylesheet" href="用户端.css">
+
+  <!-- ===== 公共 JS ===== -->
+  <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/scripts/event-bus.js"></script>
+  <script src="../公共/scripts/state-manager.js"></script>
+  <script src="../公共/scripts/mock-api.js"></script>
+</head>
+<body>
+  <div class="user-layout">
+    <!-- ===== 顶部导航 ===== -->
+    <header class="user-header">
+      <div class="header-logo">
+        <i class="fa fa-shopping-bag" aria-hidden="true"></i>
+        <span>优选商城</span>
+      </div>
+
+      <nav class="header-nav">
+        <a class="nav-item active" data-page="首页.html" data-title="首页">首页</a>
+        <a class="nav-item" data-page="商品列表.html" data-title="商品列表">商品列表</a>
+        <a class="nav-item" data-page="商品详情.html" data-title="商品详情">商品详情</a>
+      </nav>
+
+      <div class="header-actions">
+        <div class="header-search">
+          <i class="fa fa-search" aria-hidden="true" style="color:var(--color-text-placeholder)"></i>
+          <input type="text" placeholder="搜索商品...">
+        </div>
+        <div class="header-cart">
+          <i class="fa fa-shopping-cart" aria-hidden="true" style="font-size:20px;"></i>
+          <span class="cart-badge">3</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===== iframe 内容区 ===== -->
+    <div class="user-content">
+      <div class="iframe-loading" id="iframeLoading">
+        <div class="spinner"></div>
+      </div>
+      <iframe id="pageFrame" src="首页.html"></iframe>
+    </div>
+  </div>
+
+  <!-- ===== 用户端框架脚本 ===== -->
+  <script>
+    (function () {
+      var pageFrame = document.getElementById('pageFrame');
+      var loadingEl = document.getElementById('iframeLoading');
+      var navItems = document.querySelectorAll('.nav-item');
+
+      navItems.forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          e.preventDefault();
+          navigateTo(item.dataset.page);
+          navItems.forEach(function (n) { n.classList.remove('active'); });
+          item.classList.add('active');
+        });
+      });
+
+      function navigateTo(page) {
+        loadingEl.classList.add('show');
+        pageFrame.src = page;
+        pageFrame.onload = function () {
+          loadingEl.classList.remove('show');
+        };
+      }
+
+      Common.onChildNavigate(function (data) {
+        var page = data.page;
+        var targetItem = document.querySelector('.nav-item[data-page="' + page + '"]');
+        if (targetItem) {
+          navItems.forEach(function (n) { n.classList.remove('active'); });
+          targetItem.classList.add('active');
+        }
+        navigateTo(page);
+      });
+
+      window.userNavigate = navigateTo;
+    })();
+  </script>
+</body>
+</html>

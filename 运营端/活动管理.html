@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>活动管理</title>
+  <link rel="stylesheet" href="../公共/design-system/design-system.css">
+  <link rel="stylesheet" href="../公共/styles/main.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="运营端.css">
+  <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/scripts/mock-api.js"></script>
+
+  <style>
+    .page { padding: var(--space-lg); }
+    .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--space-md); }
+    .tabs { display: flex; gap: 4px; }
+    .tab { padding: 8px 16px; border-radius: var(--radius-md); font-size: 14px; cursor: pointer; transition: all var(--transition-fast); }
+    .tab:hover { background: var(--color-bg-hover); }
+    .tab.active { background: var(--color-primary); color: #fff; }
+
+    .activity-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-md); }
+    .activity-card { background: #fff; border-radius: var(--radius-lg); overflow: hidden; box-shadow: var(--shadow-sm); transition: box-shadow var(--transition-fast); }
+    .activity-card:hover { box-shadow: var(--shadow-lg); }
+
+    .activity-banner {
+      height: 140px; position: relative; overflow: hidden;
+    }
+    .activity-banner img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .activity-banner-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.4) 100%);
+    }
+
+    .activity-status-badge {
+      position: absolute; top: 12px; right: 12px;
+      padding: 4px 10px; border-radius: var(--radius-sm);
+      font-size: 12px; font-weight: 600; backdrop-filter: blur(4px);
+    }
+    .activity-status-badge.ongoing { background: rgba(16,185,129,0.9); color: #fff; }
+    .activity-status-badge.upcoming { background: rgba(245,158,11,0.9); color: #fff; }
+    .activity-status-badge.ended { background: rgba(107,114,128,0.9); color: #fff; }
+
+    .activity-body { padding: var(--space-md) var(--space-lg); }
+    .activity-title { font-size: 17px; font-weight: 700; margin-bottom: 4px; }
+    .activity-desc { font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-md); }
+    .activity-meta { display: flex; gap: var(--space-lg); font-size: 13px; color: var(--color-text-secondary); margin-bottom: var(--space-md); }
+    .activity-meta-item { display: flex; flex-direction: column; gap: 2px; }
+    .activity-meta-label { font-size: 11px; color: var(--color-text-placeholder); }
+    .activity-meta-value { font-weight: 600; color: var(--color-text-primary); }
+    .activity-actions { display: flex; gap: var(--space-sm); padding-top: var(--space-sm); border-top: 1px solid var(--color-border-light); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="toolbar">
+      <div class="tabs">
+        <div class="tab active" data-filter="">全部活动</div>
+        <div class="tab" data-filter="ongoing">进行中</div>
+        <div class="tab" data-filter="upcoming">即将开始</div>
+        <div class="tab" data-filter="ended">已结束</div>
+      </div>
+      <button class="btn btn-primary" onclick="Common.toast('新建活动功能待开发', 'info')">+ 新建活动</button>
+    </div>
+
+    <div class="activity-grid" id="activityGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--color-text-placeholder);">加载中...</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var activities = [
+        { id: 1, name: '盛夏特惠季', desc: '全品类限时折扣，低至5折起', image: 'images/A_vibrant_summer_promotional_s_2026-07-07T01-53-17.png', status: 'ongoing', startDate: '2025-06-20', endDate: '2025-07-15', participants: 15680, conversion: '12.5%' },
+        { id: 2, name: '新品首发周', desc: '新品上市，前100名半价抢购', image: 'images/A_modern_new_product_launch_pr_2026-07-07T01-53-50.png', status: 'ongoing', startDate: '2025-06-25', endDate: '2025-07-05', participants: 8920, conversion: '9.8%' },
+        { id: 3, name: '会员日专享', desc: 'VIP会员专享额外95折', image: 'images/A_VIP_membership_exclusive_pro_2026-07-07T01-54-20.png', status: 'upcoming', startDate: '2025-07-10', endDate: '2025-07-10', participants: 0, conversion: '-' },
+        { id: 4, name: '618 年中大促', desc: '跨店满减，最高减500', image: 'images/A_festive_mid_year_shopping_ca_2026-07-07T01-55-21.png', status: 'ended', startDate: '2025-06-01', endDate: '2025-06-18', participants: 45200, conversion: '15.2%' }
+      ];
+
+      var statusMap = {
+        ongoing: { text: '进行中', cls: 'ongoing' },
+        upcoming: { text: '即将开始', cls: 'upcoming' },
+        ended: { text: '已结束', cls: 'ended' }
+      };
+
+      function render(filter) {
+        var list = filter ? activities.filter(function (a) { return a.status === filter; }) : activities;
+        var grid = document.getElementById('activityGrid');
+        if (list.length === 0) { Common.renderEmpty(grid, '暂无活动'); return; }
+        grid.innerHTML = list.map(function (a) {
+          var s = statusMap[a.status];
+          return '<div class="activity-card">' +
+            '<div class="activity-banner">' +
+              '<img src="' + a.image + '" alt="' + a.name + '">' +
+              '<div class="activity-banner-overlay"></div>' +
+              '<span class="activity-status-badge ' + s.cls + '">' + s.text + '</span>' +
+            '</div>' +
+            '<div class="activity-body">' +
+              '<div class="activity-title">' + a.name + '</div>' +
+              '<div class="activity-desc">' + a.desc + '</div>' +
+              '<div class="activity-meta">' +
+                '<div class="activity-meta-item"><span class="activity-meta-label">开始时间</span><span class="activity-meta-value">' + a.startDate + '</span></div>' +
+                '<div class="activity-meta-item"><span class="activity-meta-label">结束时间</span><span class="activity-meta-value">' + a.endDate + '</span></div>' +
+                '<div class="activity-meta-item"><span class="activity-meta-label">参与人数</span><span class="activity-meta-value">' + Common.formatNumber(a.participants) + '</span></div>' +
+                '<div class="activity-meta-item"><span class="activity-meta-label">转化率</span><span class="activity-meta-value">' + a.conversion + '</span></div>' +
+              '</div>' +
+              '<div class="activity-actions">' +
+                '<button class="btn btn-secondary btn-sm" onclick="Common.toast(\'查看活动详情 #' + a.id + '\', \'info\')">详情</button>' +
+                (a.status === 'ongoing' ? '<button class="btn btn-danger btn-sm" onclick="endActivity(' + a.id + ')">结束活动</button>' : '') +
+                (a.status === 'upcoming' ? '<button class="btn btn-primary btn-sm" onclick="Common.toast(\'活动已提前启动\', \'success\')">提前启动</button>' : '') +
+                (a.status === 'ended' ? '<button class="btn btn-ghost btn-sm" onclick="Common.toast(\'查看活动报告\', \'info\')">查看报告</button>' : '') +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      }
+
+      window.endActivity = function (id) {
+        Common.confirm('确定要提前结束该活动吗？结束后无法恢复。', function () {
+          Common.toast('活动已结束', 'success');
+        });
+      };
+
+      document.querySelectorAll('.tab').forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          document.querySelectorAll('.tab').forEach(function (t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          render(tab.dataset.filter);
+        });
+      });
+
+      render('');
+    })();
+  </script>
+</body>
+</html>

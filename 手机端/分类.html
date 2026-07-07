@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0">
+  <title>分类</title>
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    html::-webkit-scrollbar { display: none; }
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 15px; color: #1C1C1E; background: #F2F2F7;
+      line-height: 1.4; width: 390px; margin: 0 auto; min-height: 100vh;
+      display: flex;
+      overflow-y: auto; overflow-x: hidden;
+    }
+    body::-webkit-scrollbar { display: none; }
+    body { scrollbar-width: none; -ms-overflow-style: none; }
+    .cat-sidebar {
+      width: 94px; background: #F2F2F7; overflow-y: auto;
+      padding: 4px 0; flex-shrink: 0;
+    }
+    .cat-sidebar-item {
+      padding: 14px 8px; text-align: center;
+      font-size: 13px; color: #8E8E93; cursor: pointer;
+      position: relative; transition: all 0.2s;
+    }
+    .cat-sidebar-item.active {
+      color: #FF6B6B; font-weight: 600; background: #FFF;
+      border-radius: 0;
+    }
+    .cat-sidebar-item.active::before {
+      content: ''; position: absolute; left: 0; top: 8px; bottom: 8px;
+      width: 3px; background: #FF6B6B; border-radius: 0 3px 3px 0;
+    }
+    .cat-main {
+      flex: 1; background: #FFF; overflow-y: auto; padding: 12px 16px;
+    }
+    .cat-section-title {
+      font-size: 14px; font-weight: 600; color: #8E8E93;
+      margin: 8px 0 10px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .cat-section-title::after {
+      content: ''; flex: 1; height: 0.5px; background: #E5E5EA;
+    }
+    .cat-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .cat-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 6px; padding: 8px 4px;
+    }
+    .cat-item .cat-icon {
+      width: 56px; height: 56px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 24px;
+    }
+    .cat-item span { font-size: 11px; color: #1C1C1E; text-align: center; }
+    .ci-1 { background: #FFF0F0; color: #FF6B6B; }
+    .ci-2 { background: #FFF4E5; color: #FF9500; }
+    .ci-3 { background: #E5F6FF; color: #5AC8FA; }
+    .ci-4 { background: #E8F8ED; color: #34C759; }
+    .ci-5 { background: #F3E8FF; color: #AF52DE; }
+    .ci-6 { background: #FFE0E0; color: #FF3B30; }
+  </style>
+</head>
+<body>
+
+  <!-- 左侧分类栏 -->
+  <div class="cat-sidebar">
+    <div class="cat-sidebar-item active">推荐</div>
+    <div class="cat-sidebar-item">数码</div>
+    <div class="cat-sidebar-item">服饰</div>
+    <div class="cat-sidebar-item">美妆</div>
+    <div class="cat-sidebar-item">家居</div>
+    <div class="cat-sidebar-item">食品</div>
+    <div class="cat-sidebar-item">母婴</div>
+    <div class="cat-sidebar-item">运动</div>
+    <div class="cat-sidebar-item">书籍</div>
+    <div class="cat-sidebar-item">其他</div>
+  </div>
+
+  <!-- 右侧内容 -->
+  <div class="cat-main">
+    <!-- 搜索栏 -->
+    <div class="m-search-bar" style="margin-bottom:10px;">
+      <i class="fa fa-search"></i> 搜索商品分类
+    </div>
+
+    <div class="cat-section-title">热门分类</div>
+    <div class="cat-grid">
+      <div class="cat-item"><div class="cat-icon ci-1"><i class="fa fa-mobile"></i></div><span>手机</span></div>
+      <div class="cat-item"><div class="cat-icon ci-2"><i class="fa fa-laptop"></i></div><span>电脑</span></div>
+      <div class="cat-item"><div class="cat-icon ci-3"><i class="fa fa-headphones"></i></div><span>耳机</span></div>
+      <div class="cat-item"><div class="cat-icon ci-4"><i class="fa fa-camera"></i></div><span>相机</span></div>
+      <div class="cat-item"><div class="cat-icon ci-5"><i class="fa fa-gamepad"></i></div><span>游戏</span></div>
+      <div class="cat-item"><div class="cat-icon ci-6"><i class="fa fa-tablet"></i></div><span>平板</span></div>
+    </div>
+
+    <div class="cat-section-title">生活精选</div>
+    <div class="cat-grid">
+      <div class="cat-item"><div class="cat-icon ci-2"><i class="fa fa-cutlery"></i></div><span>餐饮厨具</span></div>
+      <div class="cat-item"><div class="cat-icon ci-3"><i class="fa fa-bed"></i></div><span>家纺</span></div>
+      <div class="cat-item"><div class="cat-icon ci-5"><i class="fa fa-lightbulb-o"></i></div><span>灯具</span></div>
+      <div class="cat-item"><div class="cat-icon ci-4"><i class="fa fa-leaf"></i></div><span>绿植</span></div>
+      <div class="cat-item"><div class="cat-icon ci-1"><i class="fa fa-paint-brush"></i></div><span>装饰</span></div>
+      <div class="cat-item"><div class="cat-icon ci-6"><i class="fa fa-glass"></i></div><span>收纳</span></div>
+    </div>
+
+    <div class="cat-section-title">服饰美妆</div>
+    <div class="cat-grid">
+      <div class="cat-item"><div class="cat-icon ci-1"><i class="fa fa-female"></i></div><span>女装</span></div>
+      <div class="cat-item"><div class="cat-icon ci-3"><i class="fa fa-male"></i></div><span>男装</span></div>
+      <div class="cat-item"><div class="cat-icon ci-5"><i class="fa fa-child"></i></div><span>童装</span></div>
+      <div class="cat-item"><div class="cat-icon ci-2"><i class="fa fa-shopping-bag"></i></div><span>箱包</span></div>
+      <div class="cat-item"><div class="cat-icon ci-4"><i class="fa fa-magic"></i></div><span>美妆</span></div>
+      <div class="cat-item"><div class="cat-icon ci-6"><i class="fa fa-eyedropper"></i></div><span>香水</span></div>
+    </div>
+  </div>
+
+</body>
+</html>

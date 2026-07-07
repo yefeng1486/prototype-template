@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>手机端 — 移动应用原型</title>
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+</head>
+<body>
+  <div class="phone-preview">
+    <div class="phone-frame">
+
+      <!-- 动态岛 -->
+      <div class="phone-notch"></div>
+
+      <!-- 状态栏 -->
+      <div class="phone-status-bar">
+        <span class="time">9:41</span>
+        <span class="icons">
+          <i class="fa fa-signal"></i>
+          <i class="fa fa-wifi"></i>
+          <i class="fa fa-battery-full"></i>
+        </span>
+      </div>
+
+      <!-- 页面内容区 -->
+      <div class="phone-content" id="phoneContent">
+        <iframe id="pageFrame" src="首页.html" style="width:100%;height:100%;border:none;display:block;"></iframe>
+      </div>
+
+      <!-- 底部 Tab 导航栏 -->
+      <div class="phone-tab-bar">
+        <div class="phone-tab-item active" data-page="首页.html" data-tab="home">
+          <i class="fa fa-home"></i>
+          <span>首页</span>
+        </div>
+        <div class="phone-tab-item" data-page="分类.html" data-tab="category">
+          <i class="fa fa-th-large"></i>
+          <span>分类</span>
+        </div>
+        <div class="phone-tab-item" data-page="购物车.html" data-tab="cart">
+          <i class="fa fa-shopping-cart"></i>
+          <span>购物车</span>
+        </div>
+        <div class="phone-tab-item" data-page="我的.html" data-tab="profile">
+          <i class="fa fa-user-o"></i>
+          <span>我的</span>
+        </div>
+      </div>
+
+      <!-- Home Indicator -->
+      <div class="phone-home-indicator"></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var pageFrame = document.getElementById('pageFrame');
+      var tabItems = document.querySelectorAll('.phone-tab-item');
+
+      tabItems.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+          tabItems.forEach(function (t) { t.classList.remove('active'); });
+          tab.classList.add('active');
+          pageFrame.src = tab.dataset.page;
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

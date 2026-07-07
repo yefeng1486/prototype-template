@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品管理</title>
+  <link rel="stylesheet" href="../公共/design-system/design-system.css">
+  <link rel="stylesheet" href="../公共/styles/main.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="管理端.css">
+  <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/scripts/mock-api.js"></script>
+
+  <style>
+    .page { padding: var(--space-lg); }
+    .toolbar { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); align-items: center; flex-wrap: wrap; }
+    .toolbar .toolbar-input { width: 200px; }
+    .product-name-cell { display: flex; align-items: center; gap: 8px; }
+    .product-thumb { font-size: 28px; width: 32px; text-align: center; }
+    .stock-warning { color: var(--color-danger); font-weight: 500; }
+    .stock-zero { color: var(--color-text-disabled); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="toolbar">
+      <input type="text" class="toolbar-input" id="keyword" placeholder="搜索商品名称...">
+      <select class="toolbar-select" id="categoryFilter"><option value="">全部分类</option><option>智能穿戴</option><option>音频设备</option><option>电脑外设</option><option>手机配件</option><option>家居生活</option></select>
+      <select class="toolbar-select" id="statusFilter"><option value="">全部状态</option><option value="on">在售</option><option value="off">下架</option></select>
+      <button class="btn btn-primary btn-sm" id="searchBtn"><i class="fa fa-search"></i> 搜索</button>
+      <div style="flex:1;"></div>
+      <button class="btn btn-primary btn-sm" onclick="Common.toast('新增商品功能待开发', 'info')"><i class="fa fa-plus"></i> 新增商品</button>
+    </div>
+
+    <div class="card">
+      <div class="card-body" style="padding:0;">
+        <table class="data-table">
+          <thead><tr><th>ID</th><th>商品名称</th><th>分类</th><th>价格</th><th>库存</th><th>销量</th><th>状态</th><th>操作</th></tr></thead>
+          <tbody id="tableBody"><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--color-text-placeholder);">加载中...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="card-footer"><div class="pagination" id="pagination"></div></div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var currentPage = 1, pageSize = 10;
+      var params = { keyword: '', category: '', status: '' };
+
+      function loadData() {
+        Common.renderSkeleton(document.getElementById('tableBody'), pageSize);
+        MockAPI.getProducts(Object.assign({ page: currentPage, pageSize: pageSize }, params)).then(function (res) {
+          var tbody = document.getElementById('tableBody');
+          if (res.list.length === 0) { Common.renderEmpty(tbody, '没有找到匹配的商品'); return; }
+          tbody.innerHTML = res.list.map(function (p) {
+            var stockHtml = p.stock === 0 ? '<span class="stock-zero">缺货</span>' : (p.stock < 50 ? '<span class="stock-warning">' + p.stock + '</span>' : p.stock);
+            return '<tr>' +
+              '<td>' + p.id + '</td>' +
+              '<td><div class="product-name-cell"><span class="product-thumb">' + p.image + '</span><span>' + p.name + '</span></div></td>' +
+              '<td>' + p.category + '</td>' +
+              '<td style="font-weight:500;">' + Common.formatMoney(p.price) + '</td>' +
+              '<td>' + stockHtml + '</td>' +
+              '<td>' + Common.formatNumber(p.sales) + '</td>' +
+              '<td>' + (p.status === 'on' ? '<span class="badge badge-success">在售</span>' : '<span class="badge badge-danger">已下架</span>') + '</td>' +
+              '<td><a href="javascript:void(0)" class="btn btn-ghost btn-sm" onclick="editProduct(' + p.id + ')">编辑</a> <a href="javascript:void(0)" class="btn btn-ghost btn-sm" onclick="toggleProduct(' + p.id + ',\'' + p.status + '\')">' + (p.status === 'on' ? '下架' : '上架') + '</a></td>' +
+              '</tr>';
+          }).join('');
+          Common.renderPagination('pagination', currentPage, res.totalPages, res.total, function (p) { currentPage = p; loadData(); }, {
+            pageSize: pageSize,
+            onPageSizeChange: function (size) { pageSize = size; currentPage = 1; loadData(); }
+          });
+        });
+      }
+
+      window.editProduct = function (id) { Common.toast('编辑商品 #' + id, 'info'); };
+      window.toggleProduct = function (id, status) {
+        Common.confirm('确定要' + (status === 'on' ? '下架' : '上架') + '该商品吗？', function () {
+          Common.toast((status === 'on' ? '已下架' : '已上架') + '商品 #' + id, 'success');
+        });
+      };
+
+      document.getElementById('searchBtn').addEventListener('click', function () {
+        params.keyword = document.getElementById('keyword').value.trim();
+        params.category = document.getElementById('categoryFilter').value;
+        params.status = document.getElementById('statusFilter').value;
+        currentPage = 1; loadData();
+      });
+      document.getElementById('keyword').addEventListener('keydown', function (e) { if (e.key === 'Enter') document.getElementById('searchBtn').click(); });
+      loadData();
+    })();
+  </script>
+</body>
+</html>

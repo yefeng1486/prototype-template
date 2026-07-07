@@ -1,0 +1,6 @@
+[
+  { "id": "DD20250628001", "userName": "张三", "productName": "智能手表 Pro", "amount": 1299.00, "quantity": 1, "status": "pending", "date": "2025-06-28 10:23" },
+  { "id": "DD20250628002", "userName": "李四", "productName": "无线降噪耳机", "amount": 1798.00, "quantity": 2, "status": "paid", "date": "2025-06-28 11:45" },
+  { "id": "DD20250628003", "userName": "王五", "productName": "机械键盘 RGB", "amount": 459.00, "quantity": 1, "status": "shipped", "date": "2025-06-28 14:12" },
+  { "id": "DD20250627001", "userName": "赵六", "productName": "4K 显示器 27寸", "amount": 1899.00, "quantity": 1, "status": "completed", "date": "2025-06-27 09:30" }
+]

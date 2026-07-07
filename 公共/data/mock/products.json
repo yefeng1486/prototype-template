@@ -1,0 +1,6 @@
+[
+  { "id": 1, "name": "智能手表 Pro", "category": "智能穿戴", "price": 1299.00, "stock": 156, "sales": 892, "status": "on", "description": "心率监测、血氧检测、50米防水" },
+  { "id": 2, "name": "无线降噪耳机", "category": "音频设备", "price": 899.00, "stock": 234, "sales": 1567, "status": "on", "description": "主动降噪、30小时续航、蓝牙5.3" },
+  { "id": 3, "name": "机械键盘 RGB", "category": "电脑外设", "price": 459.00, "stock": 89, "sales": 445, "status": "on", "description": "机械轴体、RGB灯效、热插拔" },
+  { "id": 4, "name": "4K 显示器 27寸", "category": "电脑外设", "price": 1899.00, "stock": 45, "sales": 234, "status": "on", "description": "4K超清、HDR400、Type-C 90W" }
+]

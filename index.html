@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>原型模板</title>
+  <link rel="stylesheet" href="公共/design-system/design-system.css">
+  <link rel="stylesheet" href="公共/lib/font-awesome/css/font-awesome.min.css">
+  <style>
+    .landing {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-2xl);
+      background: linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 50%, #f3e8ff 100%);
+    }
+    .landing-header {
+      text-align: center;
+      margin-bottom: var(--space-3xl);
+    }
+    .landing-header h1 {
+      font-size: 36px;
+      font-weight: var(--font-weight-bold);
+      color: var(--color-text-primary);
+      margin-bottom: var(--space-sm);
+    }
+    .landing-header p {
+      font-size: var(--font-size-md);
+      color: var(--color-text-secondary);
+    }
+    .module-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: var(--space-xl);
+      max-width: 1100px;
+      width: 100%;
+    }
+    .module-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-md);
+      padding: var(--space-2xl) var(--space-xl);
+      background: var(--color-bg-card);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md);
+      text-decoration: none;
+      transition: transform var(--transition-base), box-shadow var(--transition-base);
+      border: 1px solid transparent;
+    }
+    .module-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-xl);
+      border-color: var(--color-primary-light);
+    }
+    .module-card .module-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: var(--radius-lg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    .module-icon.admin {
+      background: #eef2ff;
+      color: #4f46e5;
+    }
+    .module-icon.ops {
+      background: #fef3c7;
+      color: #d97706;
+    }
+    .module-icon.user {
+      background: #ecfdf5;
+      color: #059669;
+    }
+    .module-icon.mobile {
+      background: #fff0f0;
+      color: #FF6B6B;
+    }
+    .module-icon.login {
+      background: #f0e6ff;
+      color: #7C3AED;
+    }
+    .module-card h3 {
+      font-size: var(--font-size-lg);
+      font-weight: var(--font-weight-semibold);
+      color: var(--color-text-primary);
+    }
+    .module-card .module-desc {
+      font-size: var(--font-size-sm);
+      color: var(--color-text-secondary);
+      text-align: center;
+      line-height: var(--line-height-loose);
+    }
+    @media (max-width: 768px) {
+      .module-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+    @media (max-width: 480px) {
+      .module-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="landing">
+    <div class="landing-header">
+      <h1>原型模板</h1>
+      <p>选择端入口开始浏览</p>
+    </div>
+    <div class="module-grid">
+      <a href="管理端/index.html" class="module-card" target="_blank">
+        <div class="module-icon admin">
+          <i class="fa fa-dashboard"></i>
+        </div>
+        <h3>管理端</h3>
+        <p class="module-desc">仪表盘、商品管理、订单管理、用户管理</p>
+      </a>
+      <a href="运营端/index.html" class="module-card" target="_blank">
+        <div class="module-icon ops">
+          <i class="fa fa-line-chart"></i>
+        </div>
+        <h3>运营端</h3>
+        <p class="module-desc">数据看板、活动管理、运营配置</p>
+      </a>
+      <a href="用户端/index.html" class="module-card" target="_blank">
+        <div class="module-icon user">
+          <i class="fa fa-home"></i>
+        </div>
+        <h3>用户端</h3>
+        <p class="module-desc">首页、商品列表、商品详情</p>
+      </a>
+      <a href="手机端/登录.html" class="module-card" target="_blank">
+        <div class="module-icon mobile">
+          <i class="fa fa-mobile"></i>
+        </div>
+        <h3>手机端</h3>
+        <p class="module-desc">账号/手机号/第三方登录 · 底部Tab导航</p>
+      </a>
+      <a href="登录.html" class="module-card" target="_blank">
+        <div class="module-icon login">
+          <i class="fa fa-sign-in"></i>
+        </div>
+        <h3>Web 登录</h3>
+        <p class="module-desc">账号密码 · 手机号验证码 · 第三方登录</p>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

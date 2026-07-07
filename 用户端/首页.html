@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>首页</title>
+  <link rel="stylesheet" href="../公共/design-system/design-system.css">
+  <link rel="stylesheet" href="../公共/styles/main.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="用户端.css">
+  <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/scripts/mock-api.js"></script>
+
+  <style>
+    .home { max-width: 1200px; margin: 0 auto; padding: var(--space-lg); }
+
+    /* Banner */
+    .banner {
+      background: linear-gradient(135deg, #2563EB 0%, #1D4ED8 100%);
+      border-radius: var(--radius-xl); padding: 32px var(--space-xl);
+      color: #fff; margin-bottom: var(--space-lg); position: relative; overflow: hidden;
+    }
+    .banner h1 { font-size: 24px; font-weight: 800; margin-bottom: var(--space-sm); }
+    .banner p { font-size: 15px; opacity: 0.85; margin-bottom: var(--space-lg); }
+    .banner .btn { background: #fff; color: var(--color-primary); }
+    .banner .banner-decoration { position: absolute; right: 40px; top: 50%; transform: translateY(-50%); font-size: 80px; opacity: 0.12; }
+
+    /* 分类导航 */
+    .categories { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-md); margin-bottom: var(--space-lg); }
+    .category-card {
+      display: flex; flex-direction: column; align-items: center; gap: var(--space-xs);
+      padding: var(--space-lg); background: #fff; border-radius: var(--radius-lg);
+      cursor: pointer; transition: all var(--transition-fast); box-shadow: var(--shadow-sm);
+    }
+    .category-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .category-icon { font-size: 32px; }
+    .category-name { font-size: 13px; font-weight: 500; }
+
+    /* 商品网格 */
+    .section-title { font-size: 18px; font-weight: 700; margin-bottom: var(--space-md); display: flex; align-items: center; justify-content: space-between; }
+    .product-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-md); margin-bottom: var(--space-xl); }
+    .product-card {
+      background: #fff; border: 1px solid var(--color-border-light); border-radius: var(--radius-lg); overflow: hidden;
+      cursor: pointer; transition: all var(--transition-fast); box-shadow: var(--shadow-sm);
+    }
+    .product-card:hover { transform: translateY(-4px); box-shadow: var(--shadow-lg); }
+    .product-image { height: 140px; display: flex; align-items: center; justify-content: center; font-size: 48px; background: var(--color-bg-hover); }
+    .product-info { padding: var(--space-md); }
+    .product-name { font-size: 15px; font-weight: 500; margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .product-desc { font-size: 12px; color: var(--color-text-secondary); margin-bottom: var(--space-sm); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .product-price { font-size: 18px; font-weight: 700; color: var(--color-danger); }
+    .product-sales { font-size: 12px; color: var(--color-text-placeholder); }
+  </style>
+</head>
+<body>
+  <div class="home">
+    <!-- Banner -->
+    <div class="banner">
+      <h1>🔥 盛夏特惠季</h1>
+      <p>精选好物限时折扣，低至 5 折起</p>
+      <button class="btn btn-lg" onclick="Common.navigateInParent('商品列表.html', '商品列表')">立即抢购 →</button>
+      <div class="banner-decoration">🎁</div>
+    </div>
+
+    <!-- 分类导航 -->
+    <div class="categories">
+      <div class="category-card" onclick="Common.navigateInParent('商品列表.html', '商品列表')"><span class="category-icon">⌚</span><span class="category-name">智能穿戴</span></div>
+      <div class="category-card" onclick="Common.navigateInParent('商品列表.html', '商品列表')"><span class="category-icon">🎧</span><span class="category-name">音频设备</span></div>
+      <div class="category-card" onclick="Common.navigateInParent('商品列表.html', '商品列表')"><span class="category-icon">⌨️</span><span class="category-name">电脑外设</span></div>
+      <div class="category-card" onclick="Common.navigateInParent('商品列表.html', '商品列表')"><span class="category-icon">🔋</span><span class="category-name">手机配件</span></div>
+      <div class="category-card" onclick="Common.navigateInParent('商品列表.html', '商品列表')"><span class="category-icon">🏠</span><span class="category-name">家居生活</span></div>
+    </div>
+
+    <!-- 热门商品 -->
+    <div class="section-title">
+      <span>🔥 热门商品</span>
+      <a href="#" style="font-size:14px;font-weight:400;" onclick="event.preventDefault();Common.navigateInParent('商品列表.html','商品列表')">更多 →</a>
+    </div>
+    <div class="product-grid" id="productGrid">
+      <div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--color-text-placeholder);">加载中...</div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      MockAPI.getProducts({ page: 1, pageSize: 8 }).then(function (res) {
+        var grid = document.getElementById('productGrid');
+        if (res.list.length === 0) { Common.renderEmpty(grid); return; }
+        grid.innerHTML = res.list.map(function (p) {
+          return '<div class="product-card" onclick="Common.navigateInParent(\'商品详情.html\',\'商品详情\')">' +
+            '<div class="product-image">' + p.image + '</div>' +
+            '<div class="product-info">' +
+              '<div class="product-name">' + p.name + '</div>' +
+              '<div class="product-desc">' + p.description + '</div>' +
+              '<div style="display:flex;align-items:center;justify-content:space-between;">' +
+                '<span class="product-price">' + Common.formatMoney(p.price) + '</span>' +
+                '<span class="product-sales">已售' + Common.formatNumber(p.sales) + '</span>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      });
+    })();
+  </script>
+</body>
+</html>

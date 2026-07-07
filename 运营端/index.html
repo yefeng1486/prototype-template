@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>运营端 — 运营分析平台</title>
+
+  <!-- ===== 公共 CSS ===== -->
+  <link rel="stylesheet" href="../公共/design-system/design-system.css">
+  <link rel="stylesheet" href="../公共/styles/main.css">
+
+  <!-- ===== Font Awesome 4.7.0（本地） ===== -->
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+
+  <!-- ===== 运营端特有样式 ===== -->
+  <link rel="stylesheet" href="运营端.css">
+
+  <!-- ===== 公共 JS ===== -->
+  <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/scripts/event-bus.js"></script>
+  <script src="../公共/scripts/state-manager.js"></script>
+  <script src="../公共/scripts/mock-api.js"></script>
+</head>
+<body>
+  <div class="ops-layout">
+    <!-- ===== 侧边栏 ===== -->
+    <aside class="ops-sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <i class="fa fa-line-chart sidebar-logo-icon" aria-hidden="true"></i>
+        <span class="sidebar-logo-text">运营平台</span>
+      </div>
+      <nav class="sidebar-nav">
+        <div class="sidebar-section-label">数据分析</div>
+        <a class="sidebar-item active" data-page="数据看板.html" data-title="数据看板">
+          <i class="fa fa-bar-chart sidebar-item-icon" aria-hidden="true"></i>
+          <span class="sidebar-label">数据看板</span>
+        </a>
+        <div class="sidebar-section-label">运营管理</div>
+        <a class="sidebar-item" data-page="活动管理.html" data-title="活动管理">
+          <i class="fa fa-bullseye sidebar-item-icon" aria-hidden="true"></i>
+          <span class="sidebar-label">活动管理</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- ===== 主区域 ===== -->
+    <div class="ops-main">
+      <header class="ops-topbar">
+        <div class="topbar-left">
+          <div class="topbar-toggle" id="toggleSidebar"><i class="fa fa-bars" aria-hidden="true"></i></div>
+          <span class="topbar-title" id="pageTitle">数据看板</span>
+        </div>
+        <div class="topbar-right">
+          <div class="topbar-actions">
+            <div class="topbar-icon-btn" title="搜索" onclick="Common.toast('搜索功能', 'info')"><i class="fa fa-search" aria-hidden="true"></i></div>
+            <div class="topbar-icon-btn" title="消息" onclick="Common.toast('暂无新消息', 'info')"><i class="fa fa-bell-o" aria-hidden="true"></i><span class="icon-badge"></span></div>
+            <div class="topbar-icon-btn" title="帮助" onclick="Common.toast('帮助中心', 'info')"><i class="fa fa-question-circle-o" aria-hidden="true"></i></div>
+            <div class="topbar-icon-btn" title="设置" onclick="Common.toast('设置功能', 'info')"><i class="fa fa-cog" aria-hidden="true"></i></div>
+          </div>
+          <div class="topbar-user">
+            <div class="topbar-avatar">运</div>
+            <span style="font-size:14px;">运营员</span>
+          </div>
+        </div>
+      </header>
+
+      <div class="ops-content">
+        <div class="iframe-loading" id="iframeLoading">
+          <div class="spinner"></div>
+        </div>
+        <iframe id="pageFrame" src="数据看板.html"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== 运营端框架脚本 ===== -->
+  <script>
+    (function () {
+      var sidebar = document.getElementById('sidebar');
+      var pageFrame = document.getElementById('pageFrame');
+      var pageTitle = document.getElementById('pageTitle');
+      var loadingEl = document.getElementById('iframeLoading');
+      var navItems = document.querySelectorAll('.sidebar-item');
+
+      navItems.forEach(function (item) {
+        item.addEventListener('click', function (e) {
+          e.preventDefault();
+          navigateTo(item.dataset.page, item.dataset.title);
+          navItems.forEach(function (n) { n.classList.remove('active'); });
+          item.classList.add('active');
+        });
+      });
+
+      document.getElementById('toggleSidebar').addEventListener('click', function () {
+        sidebar.classList.toggle('collapsed');
+      });
+
+      function navigateTo(page, title) {
+        loadingEl.classList.add('show');
+        pageFrame.src = page;
+        if (title) pageTitle.textContent = title;
+        pageFrame.onload = function () {
+          loadingEl.classList.remove('show');
+        };
+      }
+
+      Common.onChildNavigate(function (data) {
+        var page = data.page;
+        var targetItem = document.querySelector('.sidebar-item[data-page="' + page + '"]');
+        if (targetItem) {
+          navItems.forEach(function (n) { n.classList.remove('active'); });
+          targetItem.classList.add('active');
+        }
+        navigateTo(page, data.title || (targetItem ? targetItem.dataset.title : ''));
+      });
+
+      window.opsNavigate = navigateTo;
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,7 @@
+[
+  { "id": 1, "name": "张三", "phone": "13800138001", "email": "zhangsan@example.com", "role": "管理员", "status": "active", "registerDate": "2025-01-15", "orders": 23, "amount": 4580.50 },
+  { "id": 2, "name": "李四", "phone": "13800138002", "email": "lisi@example.com", "role": "普通用户", "status": "active", "registerDate": "2025-02-20", "orders": 8, "amount": 1290.00 },
+  { "id": 3, "name": "王五", "phone": "13800138003", "email": "wangwu@example.com", "role": "普通用户", "status": "disabled", "registerDate": "2025-03-10", "orders": 15, "amount": 3260.80 },
+  { "id": 4, "name": "赵六", "phone": "13800138004", "email": "zhaoliu@example.com", "role": "VIP", "status": "active", "registerDate": "2024-12-05", "orders": 56, "amount": 12380.00 },
+  { "id": 5, "name": "孙七", "phone": "13800138005", "email": "sunqi@example.com", "role": "普通用户", "status": "active", "registerDate": "2025-04-18", "orders": 3, "amount": 459.90 }
+]

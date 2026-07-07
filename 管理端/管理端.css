@@ -1,0 +1,110 @@
+/* ============================================================
+ * 管理端特有样式
+ * 管理端 index.html 及所有子页面共用
+ * ============================================================ */
+
+.admin-layout { display: flex; height: 100vh; overflow: hidden; }
+
+/* 侧边栏 */
+.admin-sidebar {
+  width: var(--sidebar-width);
+  background: #F8F9FB;
+  border-right: 1px solid var(--color-border-light);
+  display: flex; flex-direction: column; flex-shrink: 0;
+  transition: width var(--transition-base);
+}
+.admin-sidebar.collapsed { width: var(--sidebar-collapsed-width); }
+.admin-sidebar.collapsed .sidebar-label,
+.admin-sidebar.collapsed .sidebar-logo-text,
+.admin-sidebar.collapsed .sidebar-section-label,
+.admin-sidebar.collapsed .sidebar-footer { display: none; }
+.admin-sidebar.collapsed .sidebar-item { justify-content: center; }
+
+.sidebar-logo {
+  padding: 16px 20px; display: flex; align-items: center; gap: 10px;
+  color: var(--color-text-primary); font-weight: 700; font-size: 18px;
+  flex-shrink: 0;
+}
+.sidebar-logo-icon { font-size: 22px; color: var(--color-primary); }
+
+.sidebar-nav { flex: 1; overflow-y: auto; padding: 12px 0; }
+.sidebar-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 20px; color: var(--color-text-secondary);
+  font-size: 14px; cursor: pointer;
+  transition: all var(--transition-fast);
+  text-decoration: none;
+}
+.sidebar-item:hover { color: var(--color-text-primary); background: var(--color-bg-hover); }
+.sidebar-item.active {
+  color: var(--color-primary); background: var(--color-primary-bg);
+  font-weight: 600;
+}
+.sidebar-item-icon { font-size: 16px; flex-shrink: 0; width: 20px; text-align: center; }
+
+.sidebar-section-label {
+  padding: 16px 20px 6px; font-size: 11px;
+  color: var(--color-text-placeholder); text-transform: uppercase; letter-spacing: 1px;
+}
+
+/* 主区域 */
+.admin-main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+
+.admin-topbar {
+  height: var(--topbar-height); background: var(--color-bg-card);
+  border-bottom: 1px solid var(--color-border-light);
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 var(--space-lg); flex-shrink: 0;
+}
+.topbar-left { display: flex; align-items: center; gap: var(--space-md); }
+.topbar-toggle {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 18px; color: var(--color-text-secondary);
+  transition: background var(--transition-fast);
+}
+.topbar-toggle:hover { background: var(--color-bg-hover); }
+.topbar-title { font-size: 16px; font-weight: 600; }
+
+.topbar-right { display: flex; align-items: center; gap: var(--space-md); }
+.topbar-user {
+  display: flex; align-items: center; gap: 8px;
+  padding: 4px 12px; border-radius: var(--radius-md);
+  background: var(--color-bg-hover); cursor: pointer;
+  color: var(--color-text-primary);
+}
+.topbar-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--color-primary); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+}
+
+/* 顶栏图标操作区 */
+.topbar-actions { display: flex; align-items: center; gap: 2px; }
+.topbar-icon-btn {
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius-sm); cursor: pointer;
+  font-size: 15px; color: var(--color-text-secondary);
+  transition: all var(--transition-fast); position: relative;
+}
+.topbar-icon-btn:hover { background: var(--color-bg-hover); color: var(--color-text-primary); }
+.topbar-icon-btn .icon-badge {
+  position: absolute; top: 5px; right: 5px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--color-danger); border: 1.5px solid var(--color-bg-card);
+}
+
+/* iframe 内容区 */
+.admin-content { flex: 1; overflow: hidden; background: var(--color-bg-page); position: relative; }
+.admin-content iframe { width: 100%; height: 100%; border: none; display: block; }
+
+.iframe-loading {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255,255,255,0.6); z-index: 10;
+  pointer-events: none; opacity: 0; transition: opacity 0.2s;
+}
+.iframe-loading.show { opacity: 1; }

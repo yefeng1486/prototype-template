@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>用户管理</title>
+  <link rel="stylesheet" href="../公共/design-system/design-system.css">
+  <link rel="stylesheet" href="../公共/styles/main.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <link rel="stylesheet" href="管理端.css">
+  <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/scripts/mock-api.js"></script>
+
+  <style>
+    .page { padding: var(--space-lg); }
+    .toolbar { display: flex; gap: var(--space-sm); margin-bottom: var(--space-md); align-items: center; flex-wrap: wrap; }
+    .toolbar .toolbar-input { width: 240px; }
+    .role-badge { padding: 2px 10px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500; }
+    .role-badge.管理员 { background: var(--color-primary-bg); color: var(--color-primary); }
+    .role-badge.VIP { background: var(--color-warning-bg); color: #92400E; }
+    .role-badge.普通用户 { background: var(--color-bg-hover); color: var(--color-text-secondary); }
+    .status-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 6px; }
+    .status-dot.active { background: var(--color-success); }
+    .status-dot.disabled { background: var(--color-text-disabled); }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <!-- 搜索筛选 -->
+    <div class="toolbar">
+      <input type="text" class="toolbar-input" id="keyword" placeholder="搜索用户名/手机号/邮箱...">
+      <select class="toolbar-select" id="roleFilter">
+        <option value="">全部角色</option>
+        <option value="管理员">管理员</option>
+        <option value="VIP">VIP</option>
+        <option value="普通用户">普通用户</option>
+      </select>
+      <select class="toolbar-select" id="statusFilter">
+        <option value="">全部状态</option>
+        <option value="active">正常</option>
+        <option value="disabled">已禁用</option>
+      </select>
+      <button class="btn btn-primary btn-sm" id="searchBtn"><i class="fa fa-search"></i> 搜索</button>
+      <button class="btn btn-secondary btn-sm" id="resetBtn">重置</button>
+      <div style="flex:1;"></div>
+      <button class="btn btn-primary btn-sm" onclick="Common.toast('新增用户功能待开发', 'info')"><i class="fa fa-plus"></i> 新增用户</button>
+    </div>
+
+    <!-- 表格 -->
+    <div class="card">
+      <div class="card-body" style="padding:0;">
+        <table class="data-table">
+          <thead>
+            <tr><th>ID</th><th>用户名</th><th>手机号</th><th>邮箱</th><th>角色</th><th>状态</th><th>订单数</th><th>消费金额</th><th>注册时间</th><th>操作</th></tr>
+          </thead>
+          <tbody id="tableBody">
+            <tr><td colspan="10" style="text-align:center;padding:40px;color:var(--color-text-placeholder);">加载中...</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card-footer">
+        <div class="pagination" id="pagination"></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var currentPage = 1;
+      var pageSize = 10;
+      var params = { keyword: '', role: '', status: '' };
+
+      function loadData() {
+        Common.renderSkeleton(document.getElementById('tableBody'), pageSize);
+        MockAPI.getUsers(Object.assign({ page: currentPage, pageSize: pageSize }, params)).then(function (res) {
+          renderTable(res);
+          Common.renderPagination('pagination', currentPage, res.totalPages, res.total, function (p) {
+            currentPage = p;
+            loadData();
+          }, {
+            pageSize: pageSize,
+            onPageSizeChange: function (size) { pageSize = size; currentPage = 1; loadData(); }
+          });
+        });
+      }
+
+      function renderTable(res) {
+        var tbody = document.getElementById('tableBody');
+        if (res.list.length === 0) { Common.renderEmpty(tbody, '没有找到匹配的用户'); return; }
+        tbody.innerHTML = res.list.map(function (u) {
+          return '<tr>' +
+            '<td>' + u.id + '</td>' +
+            '<td style="font-weight:500;">' + u.name + '</td>' +
+            '<td>' + u.phone + '</td>' +
+            '<td style="color:var(--color-text-secondary);">' + u.email + '</td>' +
+            '<td><span class="role-badge ' + u.role + '">' + u.role + '</span></td>' +
+            '<td><span class="status-dot ' + u.status + '"></span>' + (u.status === 'active' ? '正常' : '禁用') + '</td>' +
+            '<td>' + u.orders + '</td>' +
+            '<td style="font-weight:500;">' + Common.formatMoney(u.amount) + '</td>' +
+            '<td style="color:var(--color-text-secondary);font-size:13px;">' + u.registerDate + '</td>' +
+            '<td><a href="javascript:void(0)" class="btn btn-ghost btn-sm" onclick="viewUser(' + u.id + ')">查看</a> <a href="javascript:void(0)" class="btn btn-ghost btn-sm" onclick="toggleStatus(' + u.id + ',\'' + u.status + '\')">' + (u.status === 'active' ? '禁用' : '启用') + '</a></td>' +
+            '</tr>';
+        }).join('');
+      }
+
+      window.viewUser = function (id) { Common.toast('查看用户 #' + id, 'info'); };
+      window.toggleStatus = function (id, status) {
+        Common.confirm('确定要' + (status === 'active' ? '禁用' : '启用') + '该用户吗？', function () {
+          Common.toast((status === 'active' ? '已禁用' : '已启用') + '用户 #' + id, 'success');
+        });
+      };
+
+      document.getElementById('searchBtn').addEventListener('click', function () {
+        params.keyword = document.getElementById('keyword').value.trim();
+        params.role = document.getElementById('roleFilter').value;
+        params.status = document.getElementById('statusFilter').value;
+        currentPage = 1; loadData();
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', function () {
+        document.getElementById('keyword').value = '';
+        document.getElementById('roleFilter').value = '';
+        document.getElementById('statusFilter').value = '';
+        params = { keyword: '', role: '', status: '' };
+        currentPage = 1; loadData();
+      });
+
+      document.getElementById('keyword').addEventListener('keydown', function (e) {
+        if (e.key === 'Enter') document.getElementById('searchBtn').click();
+      });
+
+      loadData();
+    })();
+  </script>
+</body>
+</html>

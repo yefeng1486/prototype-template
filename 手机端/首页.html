@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390, initial-scale=1.0">
+  <title>首页</title>
+  <link rel="stylesheet" href="design-system.css">
+  <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; }
+    html::-webkit-scrollbar { display: none; }
+    html { scrollbar-width: none; -ms-overflow-style: none; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+      font-size: 15px;
+      color: #1C1C1E;
+      background: #F2F2F7;
+      line-height: 1.4;
+      width: 390px;
+      margin: 0 auto;
+      min-height: 100vh;
+      overflow-y: auto; overflow-x: hidden;
+    }
+    body::-webkit-scrollbar { display: none; }
+    body { scrollbar-width: none; -ms-overflow-style: none; }
+    /* 顶部区域 */
+    .home-header {
+      padding: 12px 20px 16px;
+      background: #FFFFFF;
+    }
+    .home-header-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+    .home-avatar {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B6B, #FF8E8E);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 16px; font-weight: 600; flex-shrink: 0;
+    }
+    .home-greeting { flex: 1; }
+    .home-greeting .hi { font-size: 13px; color: #8E8E93; }
+    .home-greeting .name { font-size: 17px; font-weight: 600; }
+    .home-header-icons { display: flex; gap: 16px; }
+    .home-header-icons i { font-size: 20px; color: #FF6B6B; }
+    .m-search-bar { width: 100%; }
+
+    /* Banner */
+    .home-banner {
+      margin: 16px 20px;
+      padding: 20px;
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      border-radius: 16px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .home-banner h3 { font-size: 20px; margin-bottom: 4px; }
+    .home-banner p { font-size: 13px; opacity: 0.85; }
+    .home-banner .banner-btn {
+      display: inline-block; margin-top: 12px;
+      padding: 6px 16px; background: rgba(255,255,255,0.2);
+      border-radius: 20px; font-size: 13px; font-weight: 600;
+    }
+    .home-banner::after {
+      content: '';
+      position: absolute; right: -20px; top: -20px;
+      width: 100px; height: 100px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+
+    /* 金刚区 */
+    .home-icons-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      padding: 0 20px 8px;
+    }
+    .home-icon-item {
+      display: flex; flex-direction: column;
+      align-items: center; gap: 8px;
+      padding: 12px 4px;
+    }
+    .home-icon-item .icon-circle {
+      width: 48px; height: 48px;
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+    }
+    .icon-c1 { background: #FFF0F0; color: #FF6B6B; }
+    .icon-c2 { background: #FFF4E5; color: #FF9500; }
+    .icon-c3 { background: #E5F6FF; color: #5AC8FA; }
+    .icon-c4 { background: #E8F8ED; color: #34C759; }
+    .icon-c5 { background: #F3E8FF; color: #AF52DE; }
+    .icon-c6 { background: #FFF0F0; color: #FF6B6B; }
+    .icon-c7 { background: #FFF4E5; color: #FF9500; }
+    .icon-c8 { background: #E5F6FF; color: #5AC8FA; }
+    .home-icon-item span { font-size: 12px; color: #1C1C1E; }
+
+    /* Section Title */
+    .home-section {
+      padding: 0 20px;
+      margin-bottom: 8px;
+    }
+    .home-section-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 8px 0;
+    }
+    .home-section-header h4 { font-size: 17px; font-weight: 600; }
+    .home-section-header .more { font-size: 13px; color: #8E8E93; }
+
+    /* 商品卡片 */
+    .goods-scroll {
+      display: flex; gap: 10px;
+      padding: 0 20px 16px;
+      overflow-x: auto;
+      scrollbar-width: none;
+    }
+    .goods-scroll::-webkit-scrollbar { display: none; }
+    .goods-card {
+      flex-shrink: 0; width: 140px;
+      background: #fff; border-radius: 12px;
+      overflow: hidden;
+    }
+    .goods-card-img {
+      width: 100%; height: 120px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; color: #fff;
+    }
+    .gc-1 { background: linear-gradient(135deg, #FFE0E0, #FFB3B3); }
+    .gc-2 { background: linear-gradient(135deg, #FFF3E0, #FFD699); }
+    .gc-3 { background: linear-gradient(135deg, #E0F0FF, #B3D9FF); }
+    .gc-4 { background: linear-gradient(135deg, #E0FFE8, #B3F0C8); }
+    .goods-card-info { padding: 8px 10px 10px; }
+    .goods-card-info .name { font-size: 13px; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .goods-card-info .price { font-size: 15px; font-weight: 700; color: #FF6B6B; }
+    .goods-card-info .price .orig { font-size: 11px; color: #C7C7CC; text-decoration: line-through; margin-left: 4px; font-weight: 400; }
+
+    /* 瀑布流商品 */
+    .goods-grid {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 10px; padding: 0 20px 20px;
+    }
+    .goods-grid-card {
+      background: #fff; border-radius: 12px; overflow: hidden;
+    }
+    .goods-grid-card .ggc-img {
+      height: 150px; display: flex; align-items: center; justify-content: center;
+      font-size: 44px; color: #fff;
+    }
+    .goods-grid-card .ggc-info { padding: 10px 12px 12px; }
+    .goods-grid-card .ggc-name { font-size: 13px; margin-bottom: 4px; }
+    .goods-grid-card .ggc-tags { display: flex; gap: 4px; margin-bottom: 6px; }
+    .goods-grid-card .ggc-price-row { display: flex; align-items: baseline; gap: 4px; }
+    .goods-grid-card .ggc-price { font-size: 17px; font-weight: 700; color: #FF6B6B; }
+    .goods-grid-card .ggc-sold { font-size: 11px; color: #C7C7CC; }
+  </style>
+</head>
+<body>
+
+  <!-- 顶部 -->
+  <div class="home-header">
+    <div class="home-header-top">
+      <div class="home-avatar">H</div>
+      <div class="home-greeting">
+        <div class="hi">下午好</div>
+        <div class="name">欢迎回来</div>
+      </div>
+      <div class="home-header-icons">
+        <i class="fa fa-bell-o"></i>
+        <i class="fa fa-heart-o"></i>
+      </div>
+    </div>
+    <div class="m-search-bar">
+      <i class="fa fa-search"></i> 搜索商品、品牌
+    </div>
+  </div>
+
+  <!-- Banner -->
+  <div class="home-banner">
+    <h3>夏日焕新季</h3>
+    <p>全场低至 5 折起</p>
+    <span class="banner-btn">立即抢购 →</span>
+  </div>
+
+  <!-- 金刚区 -->
+  <div class="home-icons-row">
+    <div class="home-icon-item">
+      <div class="icon-circle icon-c1"><i class="fa fa-bolt"></i></div>
+      <span>限时秒杀</span>
+    </div>
+    <div class="home-icon-item">
+      <div class="icon-circle icon-c2"><i class="fa fa-star-o"></i></div>
+      <span>新品首发</span>
+    </div>
+    <div class="home-icon-item">
+      <div class="icon-circle icon-c3"><i class="fa fa-diamond"></i></div>
+      <span>品牌特卖</span>
+    </div>
+    <div class="home-icon-item">
+      <div class="icon-circle icon-c4"><i class="fa fa-gift"></i></div>
+      <span>领券中心</span>
+    </div>
+    <div class="home-icon-item">
+      <div class="icon-circle icon-c5"><i class="fa fa-trophy"></i></div>
+      <span>积分商城</span>
+    </div>
+    <div class="home-icon-item">
+      <div class="icon-circle icon-c6"><i class="fa fa-fire"></i></div>
+      <span>热销排行</span>
+    </div>
+    <div class="home-icon-item">
+      <div class="icon-circle icon-c7"><i class="fa fa-clock-o"></i></div>
+      <span>直播精选</span>
+    </div>
+    <div class="home-icon-item">
+      <div class="icon-circle icon-c8"><i class="fa fa-thumbs-o-up"></i></div>
+      <span>猜你喜欢</span>
+    </div>
+  </div>
+
+  <!-- 推荐商品（横向滚动） -->
+  <div class="home-section">
+    <div class="home-section-header">
+      <h4>为你推荐</h4>
+      <span class="more">更多 <i class="fa fa-angle-right"></i></span>
+    </div>
+  </div>
+  <div class="goods-scroll">
+    <div class="goods-card">
+      <div class="goods-card-img gc-1"><i class="fa fa-headphones"></i></div>
+      <div class="goods-card-info">
+        <div class="name">蓝牙降噪耳机 Pro</div>
+        <div class="price">¥299<span class="orig">¥599</span></div>
+      </div>
+    </div>
+    <div class="goods-card">
+      <div class="goods-card-img gc-2"><i class="fa fa-coffee"></i></div>
+      <div class="goods-card-info">
+        <div class="name">手冲咖啡套装</div>
+        <div class="price">¥89<span class="orig">¥159</span></div>
+      </div>
+    </div>
+    <div class="goods-card">
+      <div class="goods-card-img gc-3"><i class="fa fa-laptop"></i></div>
+      <div class="goods-card-info">
+        <div class="name">轻薄笔记本支架</div>
+        <div class="price">¥129<span class="orig">¥199</span></div>
+      </div>
+    </div>
+    <div class="goods-card">
+      <div class="goods-card-img gc-4"><i class="fa fa-sun-o"></i></div>
+      <div class="goods-card-info">
+        <div class="name">防晒户外帽</div>
+        <div class="price">¥59<span class="orig">¥99</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 瀑布流商品 -->
+  <div class="home-section">
+    <div class="home-section-header">
+      <h4>热门爆款</h4>
+      <span class="more">更多 <i class="fa fa-angle-right"></i></span>
+    </div>
+  </div>
+  <div class="goods-grid">
+    <div class="goods-grid-card">
+      <div class="ggc-img gc-2"><i class="fa fa-camera-retro"></i></div>
+      <div class="ggc-info">
+        <div class="ggc-name">复古胶片相机</div>
+        <div class="ggc-tags"><span class="m-tag m-tag-red">热卖</span><span class="m-tag m-tag-green">免邮</span></div>
+        <div class="ggc-price-row"><span class="ggc-price">¥458</span><span class="ggc-sold">已售 2.3w</span></div>
+      </div>
+    </div>
+    <div class="goods-grid-card">
+      <div class="ggc-img gc-1"><i class="fa fa-pagelines"></i></div>
+      <div class="ggc-info">
+        <div class="ggc-name">天然植物香薰蜡烛</div>
+        <div class="ggc-tags"><span class="m-tag m-tag-orange">新品</span></div>
+        <div class="ggc-price-row"><span class="ggc-price">¥128</span><span class="ggc-sold">已售 8.6k</span></div>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
