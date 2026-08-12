@@ -153,25 +153,88 @@ window.addEventListener('resize', function() { chart.resize(); });
 
 ### 5. common.js 公共方法
 
+所有端页面可通过 `window.Common` 调用，引入方式：`<script src="../公共/scripts/common.js"></script>`。
+
+#### DOM 快捷方法
+
 | 方法 | 说明 |
 |------|------|
-| `Common.$()` / `Common.$$()` | DOM 查询 |
-| `Common.createEl()` | 创建元素 |
-| `Common.formatMoney()` | 格式化金额 → ¥1,234.56 |
-| `Common.formatDate()` | 格式化日期 |
-| `Common.formatRelativeTime()` | 相对时间 → 3小时前 |
-| `Common.formatNumber()` | 格式化数字（千分位） |
-| `Common.toast(msg, type)` | 轻提示 |
-| `Common.confirm(msg, onOk)` | 确认对话框 |
-| `Common.showLoading()` / `hideLoading()` | 加载遮罩 |
-| `Common.storage.get/set/remove` | localStorage 封装 |
-| `Common.debounce()` / `throttle()` | 防抖 / 节流 |
-| `Common.deepClone()` | 深拷贝 |
-| `Common.navigateInParent(page, title)` | 子页面 → 父框架导航 |
-| `Common.onChildNavigate(cb)` | 父框架监听子页面导航 |
-| `Common.renderEmpty(el, text)` | 渲染空状态（自动适配 tbody / div 容器） |
-| `Common.renderPagination(el, curPage, totalPages, total, onPageChange, options)` | 渲染分页（支持每页条数切换 + 跳页） |
-| `Common.renderSkeleton(el, rows)` | 渲染骨架屏 |
+| `Common.$(selector, parent?)` | querySelector |
+| `Common.$$(selector, parent?)` | querySelectorAll → 数组 |
+| `Common.createEl(tag, attrs?, children?)` | 创建元素（支持 class/text/html/style/data-* 属性） |
+| `Common.on(el, event, selector, handler)` | 事件委托（基于 `closest` 匹配） |
+
+#### 格式化
+
+| 方法 | 说明 |
+|------|------|
+| `Common.formatMoney(num, prefix?)` | 格式化金额 → ¥1,234.56 |
+| `Common.formatNumber(num)` | 格式化数字（千分位） → 1,234 |
+| `Common.formatDate(date, withTime?)` | 格式化日期 → 2026-01-15 / 2026-01-15 14:30 |
+| `Common.formatRelativeTime(date)` | 相对时间 → 刚刚 / 3分钟前 / 2小时前 / 5天前 |
+
+#### UI 反馈
+
+| 方法 | 说明 |
+|------|------|
+| `Common.toast(msg, type?, duration?)` | 轻提示（info/success/warning/danger，默认 2500ms 自动消失，0=不消失） |
+| `Common.dismissToast(toast)` | 手动关闭指定 Toast |
+| `Common.confirm(opts, onConfirm?, onCancel?)` | 确认对话框，支持字符串或配置对象，返回 `Promise<boolean>` |
+| `Common.showLoading(message?)` | 显示加载遮罩 |
+| `Common.hideLoading()` | 隐藏加载遮罩 |
+
+**confirm 两种调用方式：**
+
+```js
+// 旧方式（向后兼容）
+Common.confirm('确定删除？', function() { /* 确认 */ }, function() { /* 取消 */ });
+
+// 新方式（推荐，返回 Promise）
+Common.confirm({
+  title: '删除确认',
+  message: '确定要删除该用户吗？',
+  type: 'danger',           // danger | warning | info
+  confirmText: '删除',
+  cancelText: '取消'
+}).then(function(ok) {
+  if (ok) { /* 确认 */ }
+});
+```
+
+#### 本地存储
+
+| 方法 | 说明 |
+|------|------|
+| `Common.storage.get(key, defaultVal?)` | 读取（自动 JSON 解析） |
+| `Common.storage.set(key, value)` | 写入（自动 JSON 序列化） |
+| `Common.storage.remove(key)` | 删除 |
+
+#### 工具函数
+
+| 方法 | 说明 |
+|------|------|
+| `Common.debounce(fn, delay?)` | 防抖（默认 300ms） |
+| `Common.throttle(fn, delay?)` | 节流（默认 200ms） |
+| `Common.deepClone(obj)` | 深拷贝（JSON 序列化） |
+| `Common.uuid()` | 生成唯一 ID |
+| `Common.getQueryParam(name)` | 获取单个 URL 查询参数 |
+| `Common.getAllQueryParams()` | 获取所有 URL 查询参数 → `{ key: value }` |
+
+#### iframe 通信
+
+| 方法 | 说明 |
+|------|------|
+| `Common.navigateInParent(pageUrl, title?)` | 子页面 → 父框架：请求切换 iframe 页面 |
+| `Common.onChildNavigate(callback)` | 父框架：监听子页面导航请求 |
+| `Common.setParentTitle(title)` | 子页面 → 父框架：更新框架页标题 |
+
+#### 通用渲染辅助
+
+| 方法 | 说明 |
+|------|------|
+| `Common.renderEmpty(container, text?)` | 渲染空状态（自动适配 tbody / div 容器） |
+| `Common.renderPagination(container, currentPage, totalPages, total, onPageChange, options?)` | 渲染分页（支持每页条数切换 + 跳页） |
+| `Common.renderSkeleton(container, rows?)` | 渲染骨架屏 |
 
 **renderPagination 参数说明：**
 
@@ -193,6 +256,34 @@ Common.renderEmpty(document.getElementById('list'));
 // tbody 容器 → 自动包裹 <tr><td colspan="N">，保持合法表格结构
 Common.renderEmpty(document.querySelector('#table tbody'));
 ```
+
+#### 字符计数器
+
+为输入框/文本域在内部右侧绑定实时字符计数器，显示格式 `当前/上限`，满字时自动标红。
+
+| 方法 | 说明 |
+|------|------|
+| `Common.bindCharCounter(input, options?)` | 单个绑定，返回包裹容器 `.char-counter-wrap` |
+| `Common.bindCharCounters(selector?, options?)` | 批量绑定，返回成功绑定数量 |
+
+```html
+<!-- HTML：加 data-char-counter + maxlength 即可 -->
+<input type="text" data-char-counter maxlength="20">
+<textarea data-char-counter maxlength="200"></textarea>
+```
+
+```js
+// 批量绑定（页面加载后调用一次，自动扫描所有 data-char-counter）
+Common.bindCharCounters();
+
+// 单个绑定 + 自定义选项
+Common.bindCharCounter('#username', { maxLength: 20, hideWhenEmpty: true });
+```
+
+| 选项 | 类型 | 说明 |
+|------|------|------|
+| `maxLength` | number | 上限，缺省时读取 input 的 `maxlength` 属性 |
+| `hideWhenEmpty` | boolean | 输入为空时隐藏计数器，默认 false |
 
 ### 6. MockAPI 数据接口
 
@@ -223,13 +314,7 @@ MockAPI.raw.users  // 原始全量数据
 | 边框浅 | `--color-border-light` | `#F3F4F6` |
 | 页面背景 | `--color-bg-page` | `#F8F9FB` |
 
-### 字体
 
-全项目统一字体栈（不使用特殊字体定义）：
-
-```css
-font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
-```
 
 ## 如何新增页面
 
