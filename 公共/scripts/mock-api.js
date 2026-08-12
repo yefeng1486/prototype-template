@@ -97,6 +97,39 @@
       return delay(paginate(list, params.page, params.pageSize));
     },
 
+    /* 新增用户 */
+    addUser: function (user) {
+      return delay(new Promise(function (resolve, reject) {
+        // 手机号 / 邮箱唯一性校验
+        var dup = usersData.some(function (u) {
+          return u.phone === user.phone || u.email === user.email;
+        });
+        if (dup) {
+          reject({ code: 409, message: '手机号或邮箱已存在' });
+          return;
+        }
+        var maxId = usersData.reduce(function (m, u) { return Math.max(m, u.id); }, 0);
+        // 当前日期 YYYY-MM-DD
+        var d = new Date();
+        var y = d.getFullYear();
+        var mo = ('0' + (d.getMonth() + 1)).slice(-2);
+        var day = ('0' + d.getDate()).slice(-2);
+        var newUser = {
+          id: maxId + 1,
+          name: user.name,
+          phone: user.phone,
+          email: user.email,
+          role: user.role || '普通用户',
+          status: user.status || 'active',
+          registerDate: user.registerDate || (y + '-' + mo + '-' + day),
+          orders: 0,
+          amount: 0
+        };
+        usersData.unshift(newUser);
+        resolve(newUser);
+      }));
+    },
+
     /* 商品 */
     getProducts: function (params) {
       params = params || {};
