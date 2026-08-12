@@ -62,6 +62,7 @@ prototype-template/
 │
 ├── 手机端/
 │   ├── index.html                      → 框架页（底部Tab导航 + iframe）
+│   ├── 手机端.css                      → ★ 手机端样式统一入口（@import 加载 design-system + Font Awesome）
 │   ├── design-system.css               → ★ 手机端独立设计系统（iOS风格变量）
 │   ├── 登录.html                        → 移动端登录（账号/验证码/第三方，登录后进入首页）
 │   ├── 首页.html                        → 轮播 + 分类 + 商品流
@@ -95,16 +96,18 @@ index.html（导航入口）
 
 | 类型 | 存放位置 | 引用方式 | 作用域 |
 |------|---------|---------|--------|
-| 公共设计系统 | `公共/design-system/` | `<link href="../公共/...">` | 所有端所有页面 |
-| 公共组件样式 | `公共/styles/main.css` | `<link href="../公共/...">` | 所有端所有页面 |
-| Font Awesome | `公共/lib/font-awesome/` | `<link href="../公共/...">` | 所有端所有页面 |
+| 公共设计系统 | `公共/design-system/` | 由各端 CSS 顶部 `@import` 统一加载 | 所有端所有页面 |
+| 公共组件样式 | `公共/styles/main.css` | 由各端 CSS 顶部 `@import` 统一加载 | 所有端所有页面 |
+| Font Awesome | `公共/lib/font-awesome/` | 由各端 CSS 顶部 `@import` 统一加载 | 所有端所有页面 |
 | ECharts | `公共/lib/echarts/` | `<script src="../公共/...">` | 需要图表的页面 |
-| 端特有样式 | `端名/端名.css` | `<link href="端名.css">` | 该端框架页 + 所有子页面 |
-| 手机端设计系统 | `手机端/design-system.css` | `<link href="design-system.css">` | 手机端所有页面（独立于公共设计系统） |
+| 端统一样式入口 | `端名/端名.css` | `<link href="端名.css">` | 该端框架页 + 所有子页面 |
+| 手机端样式入口 | `手机端/手机端.css` | `<link href="手机端.css">` | 手机端所有页面（独立于公共设计系统） |
 | 页面特有样式 | 子页面 HTML 的 `<style>` 内 | 内嵌 | 仅该页面 |
 | 页面特有逻辑 | 子页面 HTML 的 `<script>` 内 | 内嵌 | 仅该页面 |
 
-> **注意**：手机端使用独立的 `design-system.css`（iOS 风格变量），不引用公共设计系统，但仍然引用公共 `main.css` 和 `common.js`。
+> **公共样式统一入口**：管理端/运营端/用户端 CSS 顶部通过 `@import` 引入公共设计系统、`main.css` 和 Font Awesome；手机端通过 `手机端.css` 引入本地 `design-system.css` 与 Font Awesome。**页面只需引入对应端的 CSS 一个文件**，无需重复写公共样式引入。
+>
+> **注意**：手机端使用独立的 `design-system.css`（iOS 风格变量），不引用公共设计系统；根目录 `index.html`、`登录.html` 无端 CSS，仍直接引入公共样式。
 
 ### 3. Font Awesome 图标库
 
@@ -231,11 +234,8 @@ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC
 ## 如何新增页面
 
 1. 在对应端文件夹新建 `新页面.html`
-2. 复制以下 `<head>` 引用（以管理端为例）：
+2. 复制以下 `<head>` 引用（以管理端为例）——**只需引入对应端的 CSS 一个文件**，公共样式已由该文件顶部 `@import` 统一加载：
    ```html
-   <link rel="stylesheet" href="../公共/design-system/design-system.css">
-   <link rel="stylesheet" href="../公共/styles/main.css">
-   <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
    <link rel="stylesheet" href="管理端.css">
    <script src="../公共/scripts/common.js"></script>
    <script src="../公共/scripts/mock-api.js"></script>
@@ -249,18 +249,20 @@ font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC
 6. 在 `<script>` 写页面逻辑
 7. 在该端 `index.html` 的导航中添加对应菜单项
 
-> **手机端页面**引用方式略有不同，使用独立设计系统：
+> **手机端页面**引用方式略有不同，使用独立设计系统（已由 `手机端.css` 统一加载）：
 > ```html
-> <link rel="stylesheet" href="design-system.css">
-> <link rel="stylesheet" href="../公共/styles/main.css">
-> <link rel="stylesheet" href="../公共/lib/font-awesome/css/font-awesome.min.css">
+> <link rel="stylesheet" href="手机端.css">
 > ```
 
 ## 如何新增端
 
 1. 新建端文件夹（如 `客服端/`）
 2. 创建 `index.html` 框架页（可参考现有端复制修改）
-3. 创建 `客服端.css` 端特有样式文件
-4. 创建该端的子页面
-5. 引用 `../公共/` 下的共享资源 + `客服端.css`
-6. 在根目录 `index.html` 的 `.module-grid` 中添加入口卡片
+3. 创建 `客服端.css` 端特有样式文件，**文件顶部用 `@import` 引入公共样式**：
+   ```css
+   @import url('../公共/design-system/design-system.css');
+   @import url('../公共/styles/main.css');
+   @import url('../公共/lib/font-awesome/css/font-awesome.min.css');
+   ```
+4. 创建该端的子页面（页面只引入 `客服端.css` 即可）
+5. 在根目录 `index.html` 的 `.module-grid` 中添加入口卡片

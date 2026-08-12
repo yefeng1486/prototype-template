@@ -640,6 +640,63 @@
     }
   };
 
+  /* ========== 字符计数器（输入框内右侧） ========== */
+
+  /**
+   * 为单个输入框/文本域绑定字符计数器，显示在输入框内部右侧，输入时实时更新。
+   * 计数器会读取 maxlength 作为上限（或通过 options.maxLength 指定），显示格式：`当前/上限`；未设上限时仅显示字符数。
+   * @param {HTMLElement|string} input 输入框元素或 CSS 选择器
+   * @param {Object} [options] 可选配置
+   * @param {number} [options.maxLength] 上限，缺省时读取 input 的 maxlength 属性
+   * @param {boolean} [options.hideWhenEmpty] 输入为空时隐藏计数器，默认 false
+   * @returns {HTMLElement|null} 包裹容器 .char-counter-wrap；重复绑定返回 null
+   */
+  Common.bindCharCounter = function (input, options) {
+    options = options || {};
+    if (typeof input === 'string') input = Common.$(input);
+    if (!input || input.dataset.charCounterBound) return null;
+    input.dataset.charCounterBound = '1';
+
+    var max = options.maxLength != null ? options.maxLength : (parseInt(input.getAttribute('maxlength'), 10) || null);
+
+    // 用相对定位容器包裹输入框
+    var wrap = document.createElement('div');
+    wrap.className = 'char-counter-wrap';
+    input.parentNode.insertBefore(wrap, input);
+    wrap.appendChild(input);
+
+    // 计数器元素
+    var counter = document.createElement('span');
+    counter.className = 'char-counter';
+    wrap.appendChild(counter);
+
+    function update() {
+      var len = input.value.length;
+      counter.textContent = max ? len + '/' + max : String(len);
+      counter.classList.toggle('is-full', !!(max && len >= max));
+      wrap.classList.toggle('is-empty', !!(options.hideWhenEmpty && len === 0));
+    }
+
+    input.addEventListener('input', update);
+    // 中文输入法组合结束再更新一次
+    input.addEventListener('compositionend', update);
+    update();
+    return wrap;
+  };
+
+  /**
+   * 批量绑定字符计数器。默认扫描页面中所有带 `data-char-counter` 属性的输入控件。
+   * @param {string} [selector] 自定义选择器，默认 'input[data-char-counter], textarea[data-char-counter]'
+   * @param {Object} [options] 同 bindCharCounter 的 options
+   * @returns {number} 成功绑定的数量
+   */
+  Common.bindCharCounters = function (selector, options) {
+    var list = Common.$$(selector || 'input[data-char-counter], textarea[data-char-counter]');
+    var count = 0;
+    list.forEach(function (el) { if (Common.bindCharCounter(el, options)) count++; });
+    return count;
+  };
+
   /** 导出全局 */
   window.Common = Common;
 })(window);

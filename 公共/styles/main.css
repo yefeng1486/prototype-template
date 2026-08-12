@@ -77,6 +77,22 @@
 }
 .form-input::placeholder { color: var(--color-text-placeholder); }
 
+/* 字符计数器 — 输入框内右侧（配合 Common.bindCharCounter） */
+.char-counter-wrap { position: relative; display: block; }
+.char-counter-wrap > .form-input,
+.char-counter-wrap > .form-textarea,
+.char-counter-wrap > input,
+.char-counter-wrap > textarea { padding-right: 56px; }
+.char-counter {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  font-size: 12px; line-height: 1; color: var(--color-text-placeholder);
+  pointer-events: none; user-select: none; white-space: nowrap;
+}
+.char-counter-wrap > .form-textarea + .char-counter,
+.char-counter-wrap > textarea + .char-counter { top: auto; bottom: 8px; transform: none; }
+.char-counter.is-full { color: var(--color-danger); }
+.char-counter-wrap.is-empty .char-counter { display: none; }
+
 /* 下拉框 — 自定义箭头，远离右边框 */
 .form-select,
 select.form-select {

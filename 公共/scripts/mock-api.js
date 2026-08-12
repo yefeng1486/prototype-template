@@ -61,8 +61,20 @@
 
   /* ===== 工具：模拟延迟 ===== */
   function delay(data, ms) {
-    return new Promise(function (resolve) {
-      setTimeout(function () { resolve(data); }, ms || 300 + Math.random() * 200);
+    return new Promise(function (resolve, reject) {
+      // data 可能是一个 Promise（如新增/查询接口）。
+      // 先预挂空 rejection handler，避免同步 reject 的 promise 在延迟转发前被判定为 unhandled；
+      // 延迟后（模拟网络耗时）再将结果转发给调用方。
+      if (data && typeof data.then === 'function') {
+        data.then(null, function () {});
+      }
+      setTimeout(function () {
+        if (data && typeof data.then === 'function') {
+          data.then(resolve, reject);
+        } else {
+          resolve(data);
+        }
+      }, ms || 300 + Math.random() * 100);
     });
   }
 
@@ -127,6 +139,18 @@
         };
         usersData.unshift(newUser);
         resolve(newUser);
+      }));
+    },
+
+    /* 获取单个用户详情 */
+    getUserById: function (id) {
+      return delay(new Promise(function (resolve, reject) {
+        var user = usersData.find(function (u) { return u.id === id; });
+        if (!user) {
+          reject({ code: 404, message: '用户不存在' });
+          return;
+        }
+        resolve(Object.assign({}, user));
       }));
     },
 

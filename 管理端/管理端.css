@@ -3,6 +3,11 @@
  * 管理端 index.html 及所有子页面共用
  * ============================================================ */
 
+/* ===== 公共样式统一入口：页面只需引入本文件即可 ===== */
+@import url('../公共/design-system/design-system.css');
+@import url('../公共/styles/main.css');
+@import url('../公共/lib/font-awesome/css/font-awesome.min.css');
+
 .admin-layout { display: flex; height: 100vh; overflow: hidden; }
 
 /* 侧边栏 */
