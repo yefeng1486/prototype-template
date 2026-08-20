@@ -32,7 +32,9 @@ prototype-template/
 │   │   ├── font-awesome/               → Font Awesome 4.7.0（本地化，离线可用）
 │   │   └── echarts/                    → ECharts 5.5.0（本地化，离线可用）
 │   ├── scripts/
-│   │   ├── common.js                   → 公共方法库（DOM / 格式化 / UI反馈 / 存储 / iframe通信 / 分页 / 空状态）
+│   │   ├── common.js                   → 公共方法库（DOM / 格式化 / UI反馈 / 存储 / iframe通信 / 分页 / 空状态 / PRD阅读器自动加载）
+│   │   ├── prd-reader.js               → ★ PRD 文档阅读器组件（浮动按钮 + 侧滑面板 + Markdown渲染 + 多文档Tab）
+│   │   ├── prd-map.js                  → ★ PRD 文档与 HTML 页面直接关联映射（每项 { name, file }）
 │   │   ├── event-bus.js                → 跨组件事件总线
 │   │   ├── state-manager.js            → 轻量状态管理
 │   │   └── mock-api.js                 → Mock 数据接口（数据内嵌，兼容 file://）
@@ -73,6 +75,12 @@ prototype-template/
 └── 资源/                                → 图片 / 字体
     ├── images/                          → 占位图素材
     └── fonts/                           → 字体文件（待填充）
+
+├── prd/                                 → ★ PRD 文档目录（纯 .md 格式，通过 fetch 加载）
+│   ├── user-management.md              → 用户管理 PRD
+│   ├── user-create.md                  → 新增用户功能 PRD
+│   ├── product-list.md                 → 商品列表 PRD
+│   └── dashboard.md                    → 仪表盘 PRD
 ```
 
 ## 核心架构
@@ -298,6 +306,72 @@ MockAPI.getOrders({ status: 'pending' }).then(...);
 MockAPI.getStats().then(...);
 MockAPI.raw.users  // 原始全量数据
 ```
+
+### 7. PRD 文档阅读器
+
+非侵入式组件：每个页面只需引入 `common.js`（页面已引入），PRD 阅读器会**自动加载**，无需修改任何 HTML 页面。当当前页面在关联映射中有对应的 PRD 文档时，右下角自动出现浮动按钮。
+
+#### 工作原理
+
+```
+页面引入 common.js
+  └── common.js 末尾用 document.write 自动注入 prd-map.js + prd-reader.js
+       ├── prd-map.js   → PRD_MAP（页面→文档直接关联，每项 { name, file }）
+       └── prd-reader.js → 匹配页面路径 → 显示浮动按钮 → 点击打开侧滑面板 → fetch 加载 .md → Markdown 渲染
+```
+
+#### 文件结构
+
+| 文件 | 说明 |
+|------|------|
+| `公共/scripts/prd-map.js` | PRD_MAP（页面→文档关联映射，每项含 `name` 显示名称 + `file` 文件路径） |
+| `公共/scripts/prd-reader.js` | 阅读器组件（浮动按钮 + 侧滑面板 + Markdown 渲染 + Tab 切换，CSS 自注入） |
+| `prd/*.md` | PRD 文档内容（纯 Markdown 格式） |
+
+> **协议兼容**：
+> - **http:// 协议**（推荐）：`fetch()` 正常加载 `.md` 文件内容
+> - **file:// 协议**：`fetch` 被浏览器安全策略阻止，面板中会提示用户使用本地服务器打开。建议开发时用 `python -m http.server` 或 `npx serve .` 启动本地服务器
+
+#### 功能特性
+
+- 右下角浮动按钮（带文档数量角标）
+- 点击打开右侧滑面板
+- 多文档 Tab 切换（一个页面可关联多个 PRD）
+- Markdown 渲染：标题、列表、表格、代码块、引用、行内代码、链接、加粗、斜体
+- 可拖拽调整面板宽度
+- 目录导航（TOC）+ 滚动联动高亮
+- 预览 / Markdown 源码双视图切换
+- 插件 CSS 自注入（不依赖 main.css）
+- 遮罩点击关闭、ESC 关闭
+- 文档内容首次加载后缓存
+
+#### 如何为页面关联 PRD 文档
+
+**1. 创建 PRD 文档**（`prd/xxx.md`，纯 Markdown 格式）：
+
+```markdown
+# 功能 PRD
+
+## 1. 概述
+功能描述...
+```
+
+**2. 在 `prd-map.js` 中为页面添加关联**：
+
+```js
+// PRD_MAP 直接关联页面与文档（每项 { name, file }）
+PRD_MAP['管理端/某页面.html'] = [
+  { name: '我的功能 PRD', file: 'prd/my-feature.md' }
+];
+
+// 一个页面可关联多个文档，同一文档可被多个页面关联（多对多）
+PRD_MAP['管理端/另一页面.html'] = [
+  { name: '我的功能 PRD', file: 'prd/my-feature.md' },
+  { name: '用户管理 PRD', file: 'prd/user-management.md' }
+];
+```
+
+> **关联规则**：`PRD_MAP` 的 key 是页面相对根目录的路径（如 `管理端/用户管理.html`），也支持按文件名模糊匹配。`name` 用于 Tab 栏和预览时显示，`file` 指向 `.md` 文件路径。一个页面可关联多个文档，同一文档可被多个页面关联。
 
 ## 设计规范
 

@@ -699,4 +699,34 @@
 
   /** 导出全局 */
   window.Common = Common;
+
+  /* ========== PRD 阅读器自动加载（非侵入式） ==========
+   * 在 common.js 末尾用 document.write 同步加载 prd-map.js 和 prd-reader.js，
+   * 无需每个 HTML 页面单独引入。
+   * 用 document.write 而非 createElement：file:// 协议下动态注入 script
+   * 会被浏览器安全策略阻止（'file:' URLs are treated as unique security origins），
+   * document.write 在文档解析阶段同步写入，被视为原始文档的一部分，不受跨源限制。
+   *
+   * PRD 文档使用纯 .md 格式存储于 prd/ 目录，prd-reader.js 通过 fetch() 加载。
+   * - http:// 协议：fetch 正常加载 .md 内容
+   * - file:// 协议：fetch 被阻止，面板中提示用户使用本地服务器
+   */
+  (function () {
+    // 从 DOM 中自身 <script src> 推导目录路径（即 公共/scripts/）
+    // common.js 执行时 DOM 中一定有这个 script 标签，一定能拿到 src
+    var scripts = document.getElementsByTagName('script');
+    var base = '公共/scripts/';
+    for (var i = 0; i < scripts.length; i++) {
+      var src = scripts[i].getAttribute('src') || '';
+      if (/common\.js/.test(src)) {
+        var idx = src.lastIndexOf('/');
+        if (idx >= 0) base = src.substring(0, idx + 1);
+        break;
+      }
+    }
+
+    document.write('<script src="' + base + 'prd-map.js"><\/script>');
+    document.write('<script src="' + base + 'prd-reader.js"><\/script>');
+  })();
+
 })(window);
