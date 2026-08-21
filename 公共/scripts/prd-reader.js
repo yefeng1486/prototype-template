@@ -153,8 +153,15 @@
   // 面板是否打开
   var _panelOpen = false;
 
+  // 内容是否已渲染（关闭再打开时不重复渲染，只有切换 iframe 页面才重新渲染）
+  var _contentRendered = false;
+
   // 视图模式：'preview' 渲染预览 / 'markdown' 原始 Markdown
   var _viewMode = 'preview';
+
+  // 点击导航项跳转时临时抑制 scroll 事件触发的 updateActiveNav
+  // 防止文档末尾内容不足时 scrollTop 达不到目标位置导致高亮项被错误覆盖
+  var _suppressNavOnScroll = false;
 
   // ============ 路径推导 ============
   // 当前页面相对项目根目录的路径，如 '管理端/用户管理.html'
@@ -670,9 +677,14 @@
           // 直接跳转到标题位置，临时禁用平滑滚动
           var content = document.getElementById('prd-reader-content');
           if (content) {
+            // 抑制 scroll 事件触发 updateActiveNav 覆盖手动高亮
+            // （文档末尾内容不足时 scrollTop 达不到目标位置，updateActiveNav 会算出错误的高亮项）
+            _suppressNavOnScroll = true;
             content.style.scrollBehavior = 'auto';
             content.scrollTop = target.offsetTop - 12;
             content.style.scrollBehavior = '';
+            // scroll 事件在当前同步代码结束后才触发，用 setTimeout 恢复
+            setTimeout(function () { _suppressNavOnScroll = false; }, 0);
           }
         }
         // 高亮当前项
@@ -691,6 +703,7 @@
   }
 
   function updateActiveNav() {
+    if (_suppressNavOnScroll) return;
     var content = document.getElementById('prd-reader-content');
     var navList = document.getElementById('prd-reader-nav-list');
     if (!content || !navList) return;
@@ -787,6 +800,7 @@
     loadPrdFile(renderDoc, function (md) {
       // 防止异步回调时已切换到其他 Tab
       if (_activeDocIndex !== renderIndex) return;
+      _contentRendered = true;
       if (md) {
         if (_viewMode === 'markdown') {
           // Markdown 源码模式
@@ -826,10 +840,13 @@
 
   function openPanel() {
     createPanel();
-    updateViewToggle();
-    updateNavVisibility();
-    renderTabs();
-    renderContent();
+    // 内容已渲染过（关闭再打开）且 iframe 页面未变 → 直接显示，不重新渲染
+    if (!_contentRendered) {
+      updateViewToggle();
+      updateNavVisibility();
+      renderTabs();
+      renderContent();
+    }
     var overlay = document.getElementById('prd-reader-overlay');
     var panel = document.getElementById('prd-reader-panel');
     if (overlay) overlay.classList.add('show');
@@ -928,6 +945,8 @@
     iframe.addEventListener('load', function () {
       updateCurrentDocs();
       updateFabBadge();
+      // 标记内容需要重新渲染（iframe 页面已切换）
+      _contentRendered = false;
       // 如果面板已打开，刷新 Tab 和内容
       if (_panelOpen) {
         renderTabs();
