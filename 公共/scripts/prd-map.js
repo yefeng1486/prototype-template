@@ -49,5 +49,8 @@ var PRD_MAP = {
   ],
   '用户端/商品列表.html': [
     { name: '商品列表 PRD', file: 'prd/product-list.md' }
-  ]
+  ],
+  '手机端/首页.html': [
+    { name: '首页PRD', file: 'prd/product-list.md' }
+  ],
 };
