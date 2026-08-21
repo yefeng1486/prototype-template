@@ -561,10 +561,14 @@
       btn.addEventListener('click', function () {
         var mode = btn.getAttribute('data-mode');
         if (mode === _viewMode) return;
+        // 记录切换前的滚动位置
+        var content = document.getElementById('prd-reader-content');
+        var savedScroll = content ? content.scrollTop : 0;
         _viewMode = mode;
         updateViewToggle();
         updateNavVisibility();
-        renderContent();
+        // 切换视图时保持滚动位置不变
+        renderContent(true, savedScroll);
       });
     });
 
@@ -663,10 +667,12 @@
         e.preventDefault();
         var target = document.getElementById(h.id);
         if (target) {
-          // 滚动内容区到标题位置
+          // 直接跳转到标题位置，临时禁用平滑滚动
           var content = document.getElementById('prd-reader-content');
           if (content) {
-            content.scrollTo({ top: target.offsetTop - 12, behavior: 'smooth' });
+            content.style.scrollBehavior = 'auto';
+            content.scrollTop = target.offsetTop - 12;
+            content.style.scrollBehavior = '';
           }
         }
         // 高亮当前项
@@ -764,7 +770,7 @@
     });
   }
 
-  function renderContent() {
+  function renderContent(keepScroll, savedScroll) {
     var content = document.getElementById('prd-reader-content');
     if (!content) return;
     if (!_currentPageDocs[_activeDocIndex]) {
@@ -789,13 +795,14 @@
           var codeEl = content.querySelector('code');
           if (codeEl) codeEl.textContent = md;
           renderNav();
-          content.scrollTop = 0;
+          // keepScroll=true 时恢复位置（视图切换），否则回到顶部（文档切换）
+          content.scrollTop = keepScroll ? (savedScroll || 0) : 0;
         } else {
           // 渲染预览模式
           resetHeadings();
           content.innerHTML = renderMarkdown(md);
           renderNav();
-          content.scrollTop = 0;
+          content.scrollTop = keepScroll ? (savedScroll || 0) : 0;
         }
       } else {
         // fetch 失败，通常是 file:// 协议
