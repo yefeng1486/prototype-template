@@ -563,6 +563,7 @@
         if (mode === _viewMode) return;
         _viewMode = mode;
         updateViewToggle();
+        updateNavVisibility();
         renderContent();
       });
     });
@@ -723,6 +724,28 @@
     });
   }
 
+  // 根据视图模式控制目录导航栏的显示/隐藏
+  // preview 模式 → 显示目录，markdown 模式 → 隐藏目录
+  function updateNavVisibility() {
+    var nav = document.getElementById('prd-reader-nav');
+    if (!nav) return;
+    if (_viewMode === 'preview') {
+      nav.classList.add('show');
+    } else {
+      nav.classList.remove('show');
+    }
+  }
+
+  // 获取文档显示名称：name 有值时用 name，否则从 file 路径解析文件名
+  function getDocName(doc) {
+    if (doc.name && doc.name.trim()) return doc.name;
+    var file = doc.file || '';
+    // 去掉路径前缀和扩展名：'prd/user-management.md' → 'user-management'
+    var name = file.split('/').pop();
+    name = name.replace(/\.md$/i, '').replace(/\.markdown$/i, '');
+    return name || '未命名文档';
+  }
+
   function renderTabs() {
     var tabBar = document.getElementById('prd-reader-tabs');
     if (!tabBar) return;
@@ -731,7 +754,7 @@
     _currentPageDocs.forEach(function (doc, index) {
       var tab = document.createElement('button');
       tab.className = 'prd-reader-tab' + (index === _activeDocIndex ? ' active' : '');
-      tab.textContent = doc.name;
+      tab.textContent = getDocName(doc);
       tab.addEventListener('click', function () {
         _activeDocIndex = index;
         renderTabs();
@@ -797,6 +820,7 @@
   function openPanel() {
     createPanel();
     updateViewToggle();
+    updateNavVisibility();
     renderTabs();
     renderContent();
     var overlay = document.getElementById('prd-reader-overlay');
