@@ -144,6 +144,9 @@
   // 当前页面对应的 PRD 文档列表（每项 { name, file }）
   var _currentPageDocs = [];
 
+  // 当前匹配到的 PRD_MAP key（用于 getRootBase 计算正确的根目录深度）
+  var _matchedKey = '';
+
   // 当前激活的文档索引（_currentPageDocs 数组下标）
   var _activeDocIndex = 0;
 
@@ -164,41 +167,71 @@
   var _suppressNavOnScroll = false;
 
   // ============ 路径推导 ============
-  // 当前页面相对项目根目录的路径，如 '管理端/用户管理.html'
-  // 注意：file:// 协议下 window.location.pathname 中的中文会被 URL 编码，
-  // 必须先 decodeURIComponent 再做路径匹配
-  function getCurrentPagePath() {
+
+  // 获取页面的绝对路径（已解码、已归一化为正斜杠）
+  function getPageAbsolutePath() {
     var rawPath = window.location.pathname;
     var path;
     try { path = decodeURIComponent(rawPath); } catch (e) { path = rawPath; }
-    path = path.replace(/\\/g, '/');
-
-    var parts = path.split('/');
-    var rootIdx = -1;
-    for (var i = 0; i < parts.length; i++) {
-      if (parts[i] === 'prototype-template') { rootIdx = i; break; }
-    }
-    if (rootIdx >= 0 && rootIdx < parts.length - 1) {
-      return parts.slice(rootIdx + 1).join('/');
-    }
-    return parts.slice(-2).filter(function (s) { return s; }).join('/');
+    return path.replace(/\\/g, '/');
   }
 
-  // 获取项目根目录的相对路径前缀
-  // 从自身 <script src> 推导：src 形如 '../公共/scripts/prd-reader.js'
-  // 去掉 '公共/scripts/prd-reader.js' 后剩余的 '../' 即为根前缀
-  function getRootBase() {
-    var scripts = document.getElementsByTagName('script');
-    for (var i = 0; i < scripts.length; i++) {
-      var src = scripts[i].getAttribute('src') || '';
-      if (/prd-reader\.js/.test(src)) {
-        var idx = src.indexOf('公共/scripts/prd-reader.js');
-        if (idx > 0) return src.substring(0, idx);
-        idx = src.lastIndexOf('/');
-        if (idx > 0) return src.substring(0, idx + 1).replace(/公共\/scripts\/$/, '');
+  // 当前页面相对项目根目录的路径，如 '管理端/用户管理.html'
+  // 策略：用 PRD_MAP 的 key 作为校准基准——
+  //   1. 精确匹配：取 pathname 末尾 N 段拼接后，直接在 PRD_MAP 中查找
+  //   2. 尾部匹配：遍历 PRD_MAP 的 key，检查 pathname 是否以 key 结尾
+  //   3. 文件名匹配：按文件名兜底
+  // 不依赖任何硬编码目录名，JS 文件在任意子目录下均可正确推导
+  // 匹配成功时将 key 存入 _matchedKey，供 getRootBase 使用
+  function getCurrentPagePath() {
+    var absPath = getPageAbsolutePath();
+    var parts = absPath.split('/').filter(function (s) { return s; });
+    var pageFile = parts.length > 0 ? parts[parts.length - 1] : '';
+
+    _matchedKey = '';
+
+    if (typeof PRD_MAP === 'undefined') return pageFile;
+
+    // 策略1：尝试不同深度，从短到长，看哪个能在 PRD_MAP 中精确匹配
+    for (var depth = 1; depth <= parts.length; depth++) {
+      var candidate = parts.slice(-depth).join('/');
+      if (PRD_MAP[candidate]) { _matchedKey = candidate; return candidate; }
+    }
+
+    // 策略2：尾部匹配——pathname 以 PRD_MAP 某个 key 结尾
+    var absNorm = absPath.replace(/\/+$/, '');
+    for (var key in PRD_MAP) {
+      if (absNorm.indexOf(key) !== -1 && absNorm.lastIndexOf(key) === absNorm.length - key.length) {
+        _matchedKey = key; return key;
       }
     }
-    return '';
+
+    // 策略3：文件名兜底
+    for (var k in PRD_MAP) {
+      if (k.split('/').pop() === pageFile) { _matchedKey = k; return k; }
+    }
+
+    return pageFile;
+  }
+
+  // 获取项目根目录的相对路径前缀（从当前页面出发）
+  // 用于 fetch 加载 .md 文件（fetch 相对于页面 URL 解析）
+  // 深度 = 匹配到的 PRD_MAP key 段数 - 1（去掉文件名段）
+  // 如 key='管理端/用户管理.html'(2段) → 目录深度=1 → 返回 '../'
+  // 如 key='code/用户端/首页/角色工作台.html'(4段) → 目录深度=3 → 返回 '../../../'
+  // iframe 容器页面：getCurrentPagePath 未命中，但 updateCurrentDocs 通过 iframe 匹配后
+  //   会设置 _matchedKey，getRootBase 也能正确计算深度
+  function getRootBase() {
+    var key = _matchedKey;
+    // 如果 _matchedKey 为空，尝试重新匹配
+    if (!key) {
+      getCurrentPagePath();
+      key = _matchedKey;
+    }
+    if (!key) return '';
+    var segCount = key.split('/').length;
+    var depth = Math.max(0, segCount - 1);
+    return depth > 0 ? Array(depth + 1).join('../') : '';
   }
 
   // ============ Markdown 渲染器（轻量级） ============
@@ -897,7 +930,7 @@
     if (!docs) {
       var fileName = pagePath.split('/').pop();
       for (var key in PRD_MAP) {
-        if (key.split('/').pop() === fileName) { docs = PRD_MAP[key]; break; }
+        if (key.split('/').pop() === fileName) { docs = PRD_MAP[key]; _matchedKey = key; break; }
       }
     }
 
@@ -911,11 +944,12 @@
           var dir = pagePath.substring(0, pagePath.lastIndexOf('/'));
           var iframePath = dir ? dir + '/' + iframeSrc : iframeSrc;
           docs = PRD_MAP[iframePath];
+          if (docs) _matchedKey = iframePath;
           // 模糊匹配
           if (!docs) {
             var ifName = iframeSrc.split('/').pop();
             for (var key2 in PRD_MAP) {
-              if (key2.split('/').pop() === ifName) { docs = PRD_MAP[key2]; break; }
+              if (key2.split('/').pop() === ifName) { docs = PRD_MAP[key2]; _matchedKey = key2; break; }
             }
           }
         }
