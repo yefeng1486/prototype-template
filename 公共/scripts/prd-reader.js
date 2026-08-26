@@ -133,7 +133,9 @@
       '.prd-md-table th { background: var(--color-bg-hover, #F3F4F6); font-weight: 600; color: var(--color-text-secondary, #6B7280); }',
       '.prd-md-table tbody tr:hover { background: var(--color-bg-hover, #F8F9FB); }',
       '.prd-md-link { color: var(--color-primary, #2563EB); text-decoration: none; }',
-      '.prd-md-link:hover { text-decoration: underline; }'
+      '.prd-md-link:hover { text-decoration: underline; }',
+      '.prd-md-anchor { color: var(--color-primary, #2563EB); text-decoration: none; cursor: pointer; }',
+      '.prd-md-anchor:hover { text-decoration: underline; }'
     ].join('\n');
     document.head.appendChild(style);
   }
@@ -210,14 +212,40 @@
   // ============ Markdown 渲染器（轻量级） ============
   var _headings = [];
   var _headingSeq = 0;
+  var _usedSlugs = {};
 
   function escapeAttr(str) {
     return str.replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
   }
 
+  // 将标题文本转换为 GitHub 风格的 slug（用于锚点跳转）
+  function slugify(text) {
+    return text
+      .toLowerCase()
+      .replace(/[^\w\s\u4e00-\u9fff-]/g, '') // 移除标点（保留字母数字、空格、中文、连字符）
+      .replace(/[\s_]+/g, '-') // 空格和下划线转连字符
+      .replace(/-+/g, '-') // 合并多个连字符
+      .replace(/^-|-$/g, ''); // 去除首尾连字符
+  }
+
+  // 生成不重复的 slug ID
+  function uniqueSlug(text) {
+    var base = slugify(text);
+    if (!base) base = 'heading-' + _headingSeq;
+    var slug = base;
+    var n = 1;
+    while (_usedSlugs[slug]) {
+      slug = base + '-' + n;
+      n++;
+    }
+    _usedSlugs[slug] = true;
+    return slug;
+  }
+
   function resetHeadings() {
     _headings = [];
     _headingSeq = 0;
+    _usedSlugs = {};
   }
 
   function renderMarkdown(md) {
@@ -249,7 +277,12 @@
       // 3. 处理 Markdown 行内语法
       text = text.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
       text = text.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
-      text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" class="prd-md-link">$1</a>');
+      text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, function (m, linkText, url) {
+        if (url.charAt(0) === '#') {
+          return '<a href="' + url + '" class="prd-md-anchor">' + linkText + '</a>';
+        }
+        return '<a href="' + url + '" target="_blank" class="prd-md-link">' + linkText + '</a>';
+      });
       // 4. 还原行内代码
       text = text.replace(/\u0000CODE(\d+)\u0000/g, function (m, idx) {
         return codePlaceholders[parseInt(idx)];
@@ -295,8 +328,9 @@
         closeList(); closeTable();
         var level = hMatch[1].length;
         var titleText = hMatch[2].replace(/\*\*/g, '').replace(/\*/g, '').trim();
-        html.push('<h' + level + ' id="prd-toc-' + _headingSeq + '" class="prd-md-h prd-md-h' + level + '" data-toc-level="' + level + '" data-toc-text="' + escapeAttr(titleText) + '">' + inlineMd(hMatch[2]) + '</h' + level + '>');
-        _headings.push({ id: 'prd-toc-' + _headingSeq, level: level, text: titleText });
+        var headingId = uniqueSlug(titleText);
+        html.push('<h' + level + ' id="' + headingId + '" class="prd-md-h prd-md-h' + level + '" data-toc-level="' + level + '" data-toc-text="' + escapeAttr(titleText) + '">' + inlineMd(hMatch[2]) + '</h' + level + '>');
+        _headings.push({ id: headingId, level: level, text: titleText });
         _headingSeq++;
         continue;
       }
@@ -740,6 +774,35 @@
     }
   }
 
+  // 绑定内容区域内的锚点链接点击事件（PRD 文档目录跳转）
+  function bindAnchorLinks(content) {
+    var anchors = content.querySelectorAll('a.prd-md-anchor');
+    anchors.forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var href = a.getAttribute('href');
+        if (!href || href.charAt(0) !== '#') return;
+        var targetId = href.substring(1);
+        var target = document.getElementById(targetId);
+        if (target) {
+          _suppressNavOnScroll = true;
+          content.style.scrollBehavior = 'auto';
+          content.scrollTop = target.offsetTop - 12;
+          content.style.scrollBehavior = '';
+          setTimeout(function () { _suppressNavOnScroll = false; }, 0);
+          // 同步高亮目录导航项
+          var navItems = document.querySelectorAll('.prd-reader-nav-item');
+          navItems.forEach(function (el) { el.classList.remove('active'); });
+          navItems.forEach(function (el) {
+            if (el.getAttribute('href') === '#' + targetId) {
+              el.classList.add('active');
+            }
+          });
+        }
+      });
+    });
+  }
+
   // 更新视图切换按钮高亮状态
   function updateViewToggle() {
     var btns = document.querySelectorAll('.prd-reader-view-btn');
@@ -822,6 +885,7 @@
           resetHeadings();
           content.innerHTML = renderMarkdown(md);
           renderNav();
+          bindAnchorLinks(content);
           content.scrollTop = keepScroll ? (savedScroll || 0) : 0;
         }
       } else {
@@ -894,30 +958,37 @@
     }
   }
 
+  // 按路径查找 PRD 文档（兼容 key 带任意目录前缀，如 'code/'、'src/' 等）
+  function findDocsByPath(path) {
+    if (!path) return null;
+    // 精确匹配
+    if (PRD_MAP[path]) return PRD_MAP[path];
+    // 后缀匹配：key 可能带项目目录前缀
+    var suffix = '/' + path;
+    for (var key in PRD_MAP) {
+      if (key.length > suffix.length && key.substring(key.length - suffix.length) === suffix) {
+        return PRD_MAP[key];
+      }
+    }
+    return null;
+  }
+
   // 根据当前页面路径或 iframe 子页面路径匹配 PRD 文档
   function updateCurrentDocs() {
     var pagePath = getCurrentPagePath();
-    var docs = PRD_MAP[pagePath];
-
-    // 模糊匹配：按文件名兜底
-    if (!docs) {
-      var fileName = pagePath.split('/').pop();
-      for (var key in PRD_MAP) {
-        if (key.split('/').pop() === fileName) { docs = PRD_MAP[key]; break; }
-      }
-    }
+    var docs = findDocsByPath(pagePath);
 
     // 如果当前页面没有匹配，检查是否有 iframe，用 iframe 子页面路径匹配
+    // （必须在页面级模糊匹配之前，避免框架页 index.html 误匹配到其他 index.html）
     if (!docs) {
       var iframe = getMainFrame();
       if (iframe) {
         var iframeSrc = iframe.getAttribute('src') || '';
         if (iframeSrc) {
-          // iframe src 形如 '仪表盘.html'，需要拼接当前页面所在的端目录
           var dir = pagePath.substring(0, pagePath.lastIndexOf('/'));
           var iframePath = dir ? dir + '/' + iframeSrc : iframeSrc;
-          docs = PRD_MAP[iframePath];
-          // 模糊匹配
+          docs = findDocsByPath(iframePath);
+          // 模糊匹配（按文件名兜底）
           if (!docs) {
             var ifName = iframeSrc.split('/').pop();
             for (var key2 in PRD_MAP) {
@@ -925,6 +996,14 @@
             }
           }
         }
+      }
+    }
+
+    // 最后兜底：按当前页面文件名模糊匹配
+    if (!docs) {
+      var fileName = pagePath.split('/').pop();
+      for (var key in PRD_MAP) {
+        if (key.split('/').pop() === fileName) { docs = PRD_MAP[key]; break; }
       }
     }
 
