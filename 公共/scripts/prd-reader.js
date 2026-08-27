@@ -12,6 +12,7 @@
  * 依赖：
  *   - common.js（Common 工具库）
  *   - prd-map.js（PRD_MAP 映射表，每项为 { name, file } 结构）
+ *   - mermaid.min.js（Mermaid 流程图渲染库）
  * ========================================
  */
 (function (window, document) {
@@ -357,8 +358,8 @@
         continue;
       }
 
-      // 水平分割线
-      if (/^---+\s*$/.test(line)) { closeList(); closeTable(); html.push('<hr class="prd-md-hr">'); continue; }
+      // 水平分割线（支持 ---、***、___ 三种语法）
+      if (/^(\*{3,}|-{3,}|_{3,})\s*$/.test(line)) { closeList(); closeTable(); html.push('<hr class="prd-md-hr">'); continue; }
 
       // 表格
       if (/^\|.*\|/.test(line)) {
