@@ -974,37 +974,38 @@
   }
 
   // 根据当前页面路径或 iframe 子页面路径匹配 PRD 文档
+  // 支持嵌套框架页：用户端/index.html → 工作空间详情/index.html → 产品原型.html
   function updateCurrentDocs() {
     var pagePath = getCurrentPagePath();
-    var docs = findDocsByPath(pagePath);
+    var docs = null;
 
-    // 如果当前页面没有匹配，检查是否有 iframe，用 iframe 子页面路径匹配
-    // （必须在页面级模糊匹配之前，避免框架页 index.html 误匹配到其他 index.html）
-    if (!docs) {
-      var iframe = getMainFrame();
-      if (iframe) {
-        var iframeSrc = iframe.getAttribute('src') || '';
-        if (iframeSrc) {
-          var dir = pagePath.substring(0, pagePath.lastIndexOf('/'));
-          var iframePath = dir ? dir + '/' + iframeSrc : iframeSrc;
-          docs = findDocsByPath(iframePath);
-          // 模糊匹配（按文件名兜底）
-          if (!docs) {
-            var ifName = iframeSrc.split('/').pop();
-            for (var key2 in PRD_MAP) {
-              if (key2.split('/').pop() === ifName) { docs = PRD_MAP[key2]; break; }
-            }
-          }
-        }
-      }
+    // 收集从浅到深的所有 iframe 内容路径
+    // 浅层：用户端/空间/工作空间详情/index.html
+    // 深层：用户端/空间/工作空间详情/产品原型.html
+    var paths = [];
+    var iframe = getMainFrame();
+    var currentPath = pagePath;
+
+    while (iframe) {
+      var iframeSrc = iframe.getAttribute('src') || '';
+      if (!iframeSrc) break;
+
+      // 拼接 iframe src 到当前路径的目录下
+      var dir = currentPath.substring(0, currentPath.lastIndexOf('/'));
+      var iframePath = dir ? dir + '/' + iframeSrc : iframeSrc;
+      paths.push(iframePath);
+
+      currentPath = iframePath;
+      iframe = getNestedMainFrame(iframe);
     }
 
-    // 最后兜底：按当前页面文件名模糊匹配
-    if (!docs) {
-      var fileName = pagePath.split('/').pop();
-      for (var key in PRD_MAP) {
-        if (key.split('/').pop() === fileName) { docs = PRD_MAP[key]; break; }
-      }
+    // 有 iframe 时，只匹配最深层路径（用户实际查看的页面）
+    // 不回退到浅层框架页，避免子页面无配置时仍显示框架页的文档
+    if (paths.length > 0) {
+      docs = findDocsByPath(paths[paths.length - 1]);
+    } else {
+      // 无 iframe 时，匹配当前页面路径（非框架页）
+      docs = findDocsByPath(pagePath);
     }
 
     _currentPageDocs = docs || [];
@@ -1041,23 +1042,61 @@
     return null;
   }
 
+  // 查找 iframe 内嵌套的主 iframe（框架页嵌套场景）
+  // 例如：用户端/index.html 的 iframe 加载了 工作空间详情/index.html，
+  // 后者自身也有 mainContent iframe，需要递归查找
+  function getNestedMainFrame(parentIframe) {
+    try {
+      var doc = parentIframe.contentDocument || (parentIframe.contentWindow && parentIframe.contentWindow.document);
+      if (!doc) return null;
+      var iframes = doc.getElementsByTagName('iframe');
+      // 优先返回第一个可见且有 src 的 iframe（跳过 display:none 容器内的，如用户面板）
+      for (var i = 0; i < iframes.length; i++) {
+        if (iframes[i].getAttribute('src') && !isElementHidden(iframes[i])) return iframes[i];
+      }
+      // 兜底：全部隐藏时返回第一个有 src 的 iframe
+      for (var j = 0; j < iframes.length; j++) {
+        if (iframes[j].getAttribute('src')) return iframes[j];
+      }
+    } catch (e) {
+      // 跨域或无法访问 contentDocument
+    }
+    return null;
+  }
+
+  // iframe 加载后的通用刷新逻辑
+  function onIframeLoad() {
+    updateCurrentDocs();
+    updateFabBadge();
+    // 标记内容需要重新渲染（iframe 页面已切换）
+    _contentRendered = false;
+    // 如果面板已打开，刷新 Tab 和内容
+    if (_panelOpen) {
+      renderTabs();
+      renderContent();
+    }
+  }
+
+  // 监听嵌套 iframe 的页面切换（框架页嵌套场景）
+  // 例如：工作空间详情/index.html 内部的 mainContent iframe 切换到 产品原型.html
+  function watchNestedIframes(parentIframe) {
+    var nested = getNestedMainFrame(parentIframe);
+    if (!nested) return;
+    nested.addEventListener('load', onIframeLoad);
+  }
+
   // 监听 iframe 切换页面，更新浮动按钮和面板内容
   function watchIframeChanges() {
     var iframe = getMainFrame();
     if (!iframe) return;
 
-    // iframe 加载完成时更新文档列表
+    // 顶层 iframe 加载完成时更新文档列表，并监听嵌套 iframe
     iframe.addEventListener('load', function () {
-      updateCurrentDocs();
-      updateFabBadge();
-      // 标记内容需要重新渲染（iframe 页面已切换）
-      _contentRendered = false;
-      // 如果面板已打开，刷新 Tab 和内容
-      if (_panelOpen) {
-        renderTabs();
-        renderContent();
-      }
+      onIframeLoad();
+      watchNestedIframes(iframe);
     });
+    // 也尝试立即检查嵌套 iframe（iframe 可能已加载完成）
+    watchNestedIframes(iframe);
   }
 
   // 更新浮动按钮角标数量
