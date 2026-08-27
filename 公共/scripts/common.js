@@ -725,6 +725,7 @@
       }
     }
 
+    document.write('<script src="' + base + '../lib/mermaid.min.js"><\/script>');
     document.write('<script src="' + base + 'prd-map.js"><\/script>');
     document.write('<script src="' + base + 'prd-reader.js"><\/script>');
   })();

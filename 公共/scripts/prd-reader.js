@@ -135,7 +135,11 @@
       '.prd-md-link { color: var(--color-primary, #2563EB); text-decoration: none; }',
       '.prd-md-link:hover { text-decoration: underline; }',
       '.prd-md-anchor { color: var(--color-primary, #2563EB); text-decoration: none; cursor: pointer; }',
-      '.prd-md-anchor:hover { text-decoration: underline; }'
+      '.prd-md-anchor:hover { text-decoration: underline; }',
+      '',
+      '/* Mermaid 流程图 */',
+      '.prd-reader-content .mermaid { margin: 16px 0; text-align: center; overflow-x: auto; }',
+      '.prd-reader-content .mermaid svg { max-width: 100%; height: auto; }'
     ].join('\n');
     document.head.appendChild(style);
   }
@@ -256,6 +260,8 @@
     var lines = md.split('\n');
     var html = [];
     var inCodeBlock = false;
+    var inMermaidBlock = false;
+    var mermaidContent = [];
     var inTable = false;
     var tableHeaderParsed = false;
     var codeLang = '';
@@ -305,15 +311,31 @@
       var lineForCodeCheck = line.replace(/^>\s?/, '').replace(/^\s+/, '');
       var codeMatch = lineForCodeCheck.match(/^```\s*(.*)$/);
       if (codeMatch) {
-        if (inCodeBlock) {
-          html.push('</code></pre>');
-          inCodeBlock = false; codeLang = '';
+        if (inCodeBlock || inMermaidBlock) {
+          if (inMermaidBlock) {
+            // Mermaid 块结束：输出 mermaid 容器
+            html.push('<div class="mermaid">' + escapeHtml(mermaidContent.join('\n')) + '</div>');
+            inMermaidBlock = false;
+            mermaidContent = [];
+          } else {
+            html.push('</code></pre>');
+            inCodeBlock = false;
+          }
+          codeLang = '';
         } else {
           closeList(); closeTable();
           codeLang = codeMatch[1].trim();
-          html.push('<pre class="prd-md-pre' + (codeLang ? ' lang-' + codeLang : '') + '"><code>');
-          inCodeBlock = true;
+          if (codeLang === 'mermaid') {
+            inMermaidBlock = true;
+          } else {
+            html.push('<pre class="prd-md-pre' + (codeLang ? ' lang-' + codeLang : '') + '"><code>');
+            inCodeBlock = true;
+          }
         }
+        continue;
+      }
+      if (inMermaidBlock) {
+        mermaidContent.push(line.replace(/^>\s?/, '').replace(/^\s+/, ''));
         continue;
       }
       if (inCodeBlock) {
@@ -852,6 +874,29 @@
     });
   }
 
+  // 渲染 Mermaid 流程图
+  function renderMermaid(container) {
+    var mermaidDivs = container.querySelectorAll('.mermaid');
+    if (!mermaidDivs.length) return;
+
+    function runMermaid() {
+      try {
+        mermaid.initialize({ startOnLoad: false, theme: 'default', securityLevel: 'loose' });
+        mermaid.run({ nodes: mermaidDivs });
+      } catch (e) {
+        // 渲染失败时保留原始文本
+      }
+    }
+
+    // mermaid.min.js 已由 win.js 统一加载，此处直接调用
+    if (typeof mermaid === 'undefined') {
+      // 如果仍未加载（兜底），等待 100ms 后重试
+      setTimeout(function() { renderMermaid(container); }, 100);
+    } else {
+      runMermaid();
+    }
+  }
+
   function renderContent(keepScroll, savedScroll) {
     var content = document.getElementById('prd-reader-content');
     if (!content) return;
@@ -886,6 +931,7 @@
           content.innerHTML = renderMarkdown(md);
           renderNav();
           bindAnchorLinks(content);
+          renderMermaid(content);
           content.scrollTop = keepScroll ? (savedScroll || 0) : 0;
         }
       } else {
