@@ -8,11 +8,11 @@
 
 ```
 index.html              → 导航入口页（5个端入口卡片）
-管理端/index.html        → 后台管理界面
-运营端/index.html        → 运营分析界面
-用户端/index.html        → 商城用户界面
-手机端/登录.html          → 移动端登录页（登录后进入手机端首页）
-登录.html                → Web 登录页（登录后跳转根目录 index.html）
+admin/index.html        → 后台管理界面
+operation/index.html    → 运营分析界面
+user/index.html         → 商城用户界面
+mobile/登录.html         → 移动端登录页（登录后进入手机端首页）
+登录.html               → Web 登录页（登录后跳转根目录 index.html）
 ```
 
 ## 目录结构
@@ -40,31 +40,32 @@ prototype-template/
 │   │   └── mock-api.js                 → Mock 数据接口（数据内嵌，兼容 file://）
 │   └── data/mock/                      → JSON 数据文件（users / products / orders）
 │
-├── 管理端/
+├── admin/                              → 管理端（后台管理）
 │   ├── index.html                      → 框架页（浅色侧边栏 + 顶栏 + iframe）
-│   ├── 管理端.css                      → 管理端特有样式（框架 + 子页面共用）
+│   ├── admin.css                       → 管理端特有样式（框架 + 子页面共用）
 │   ├── 仪表盘.html                      → 统计卡片 + ECharts 多图表 + 最近订单 + 快捷操作
 │   ├── 用户管理.html                    → 搜索 + 筛选 + 分页表格（含每页条数切换）
 │   ├── 商品管理.html                    → 多条件筛选 + 编辑/上下架
 │   └── 订单管理.html                    → 统计 + 状态 Tab + 分页表格
 │
-├── 运营端/
+├── operation/                          → 运营端（运营分析）
 │   ├── index.html                      → 框架页（浅色侧边栏 + 顶栏 + iframe）
-│   ├── 运营端.css                      → 运营端特有样式（框架 + 子页面共用）
+│   ├── operation.css                   → 运营端特有样式（框架 + 子页面共用）
 │   ├── 数据看板.html                    → KPI卡片 + ECharts 多图表（柱状/环形/漏斗/面积）+ 排行榜
 │   ├── 活动管理.html                    → 活动卡片（AI生成封面图）
 │   └── images/                         → 活动封面图（AI 生成）
 │
-├── 用户端/
+├── user/                               → 用户端（商城前台）
 │   ├── index.html                      → 框架页（顶部导航 + iframe）
-│   ├── 用户端.css                      → 用户端特有样式（框架 + 子页面共用）
+│   ├── user.css                        → 用户端特有样式（框架 + 子页面共用）
 │   ├── 首页.html                        → Banner + 分类 + 商品网格
 │   ├── 商品列表.html                    → 侧边筛选 + 排序 + 商品卡片
 │   └── 商品详情.html                    → 大图 + 规格 + 购买按钮
 │
-├── 手机端/
+├── mobile/                             → 手机端（移动应用）
 │   ├── index.html                      → 框架页（底部Tab导航 + iframe）
-│   ├── 手机端.css                      → ★ 手机端样式统一入口（@import 加载 design-system + Font Awesome）
+│   ├── mobile.css                      → ★ 手机端样式统一入口（@import 加载 design-system + Font Awesome）
+│   ├── mobile.js                       → ★ 手机端公共脚本统一入口（自动加载 common.js → PRD 阅读器）
 │   ├── design-system.css               → ★ 手机端独立设计系统（iOS风格变量）
 │   ├── 登录.html                        → 移动端登录（账号/验证码/第三方，登录后进入首页）
 │   ├── 首页.html                        → 轮播 + 分类 + 商品流
@@ -108,12 +109,12 @@ index.html（导航入口）
 | 公共组件样式 | `公共/styles/main.css` | 由各端 CSS 顶部 `@import` 统一加载 | 所有端所有页面 |
 | Font Awesome | `公共/lib/font-awesome/` | 由各端 CSS 顶部 `@import` 统一加载 | 所有端所有页面 |
 | ECharts | `公共/lib/echarts/` | `<script src="../公共/...">` | 需要图表的页面 |
-| 端统一样式入口 | `端名/端名.css` | `<link href="端名.css">` | 该端框架页 + 所有子页面 |
-| 手机端样式入口 | `手机端/手机端.css` | `<link href="手机端.css">` | 手机端所有页面（独立于公共设计系统） |
+| 端统一样式入口 | `端目录/端名.css`（如 `admin/admin.css`） | `<link href="admin.css">` | 该端框架页 + 所有子页面 |
+| 手机端样式入口 | `mobile/mobile.css` | `<link href="mobile.css">` | 手机端所有页面（独立于公共设计系统） |
 | 页面特有样式 | 子页面 HTML 的 `<style>` 内 | 内嵌 | 仅该页面 |
 | 页面特有逻辑 | 子页面 HTML 的 `<script>` 内 | 内嵌 | 仅该页面 |
 
-> **公共样式统一入口**：管理端/运营端/用户端 CSS 顶部通过 `@import` 引入公共设计系统、`main.css` 和 Font Awesome；手机端通过 `手机端.css` 引入本地 `design-system.css` 与 Font Awesome。**页面只需引入对应端的 CSS 一个文件**，无需重复写公共样式引入。
+> **公共样式统一入口**：admin/operation/user 端 CSS 顶部通过 `@import` 引入公共设计系统、`main.css` 和 Font Awesome；手机端通过 `mobile.css` 引入本地 `design-system.css` 与 Font Awesome。**页面只需引入对应端的 CSS 一个文件**，无需重复写公共样式引入。
 >
 > **注意**：手机端使用独立的 `design-system.css`（iOS 风格变量），不引用公共设计系统；根目录 `index.html`、`登录.html` 无端 CSS，仍直接引入公共样式。
 
@@ -360,18 +361,18 @@ MockAPI.raw.users  // 原始全量数据
 
 ```js
 // PRD_MAP 直接关联页面与文档（每项 { name, file }）
-PRD_MAP['管理端/某页面.html'] = [
+PRD_MAP['admin/某页面.html'] = [
   { name: '我的功能 PRD', file: 'prd/my-feature.md' }
 ];
 
 // 一个页面可关联多个文档，同一文档可被多个页面关联（多对多）
-PRD_MAP['管理端/另一页面.html'] = [
+PRD_MAP['admin/另一页面.html'] = [
   { name: '我的功能 PRD', file: 'prd/my-feature.md' },
   { name: '用户管理 PRD', file: 'prd/user-management.md' }
 ];
 ```
 
-> **关联规则**：`PRD_MAP` 的 key 是页面相对根目录的路径（如 `管理端/用户管理.html`），也支持按文件名模糊匹配。`name` 用于 Tab 栏和预览时显示，`file` 指向 `.md` 文件路径。一个页面可关联多个文档，同一文档可被多个页面关联。
+> **关联规则**：`PRD_MAP` 的 key 是页面相对根目录的路径（如 `admin/用户管理.html`），也支持按文件名模糊匹配。`name` 用于 Tab 栏和预览时显示，`file` 指向 `.md` 文件路径。一个页面可关联多个文档，同一文档可被多个页面关联。
 
 ## 设计规范
 
@@ -393,9 +394,9 @@ PRD_MAP['管理端/另一页面.html'] = [
 ## 如何新增页面
 
 1. 在对应端文件夹新建 `新页面.html`
-2. 复制以下 `<head>` 引用（以管理端为例）——**只需引入对应端的 CSS 一个文件**，公共样式已由该文件顶部 `@import` 统一加载：
+2. 复制以下 `<head>` 引用（以 admin 端为例）——**只需引入对应端的 CSS 一个文件**，公共样式已由该文件顶部 `@import` 统一加载：
    ```html
-   <link rel="stylesheet" href="管理端.css">
+   <link rel="stylesheet" href="admin.css">
    <script src="../公共/scripts/common.js"></script>
    <script src="../公共/scripts/mock-api.js"></script>
    ```
@@ -408,20 +409,23 @@ PRD_MAP['管理端/另一页面.html'] = [
 6. 在 `<script>` 写页面逻辑
 7. 在该端 `index.html` 的导航中添加对应菜单项
 
-> **手机端页面**引用方式略有不同，使用独立设计系统（已由 `手机端.css` 统一加载）：
+> **手机端页面**引用方式略有不同，使用独立设计系统（已由 `mobile.css` 统一加载），并在 `</body>` 前引入 `mobile.js`（自动加载公共脚本与 PRD 阅读器）：
 > ```html
-> <link rel="stylesheet" href="手机端.css">
+> <link rel="stylesheet" href="mobile.css">
+> <script src="mobile.js"></script>
 > ```
 
 ## 如何新增端
 
-1. 新建端文件夹（如 `客服端/`）
+1. 新建端文件夹，使用**英文命名**（如 `service/`）
 2. 创建 `index.html` 框架页（可参考现有端复制修改）
-3. 创建 `客服端.css` 端特有样式文件，**文件顶部用 `@import` 引入公共样式**：
+3. 创建端特有样式文件（如 `service.css`），**文件顶部用 `@import` 引入公共样式**：
    ```css
    @import url('../公共/design-system/design-system.css');
    @import url('../公共/styles/main.css');
    @import url('../公共/lib/font-awesome/css/font-awesome.min.css');
    ```
-4. 创建该端的子页面（页面只引入 `客服端.css` 即可）
+4. 创建该端的子页面（页面只引入 `service.css` 即可）
 5. 在根目录 `index.html` 的 `.module-grid` 中添加入口卡片
+
+> **命名约定**：端文件夹及端级 CSS/JS 使用英文命名（如 `service/service.css`），页面 HTML 文件名可保持中文（如 `工单管理.html`）。
