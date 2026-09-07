@@ -1,16 +1,16 @@
 /**
  * ========================================
- * 手机端.js — 手机端公共脚本统一入口
+ * mobile.js — 手机端公共脚本统一入口
  * ========================================
  * 手机端各页面只需引入本文件，内部统一加载公共 common.js。
  * common.js 末尾会自动注入 prd-map.js 和 prd-reader.js（通过 document.write），
  * 实现非侵入式 PRD 阅读器接入，无需页面单独引入。
  *
  * 引入方式（手机端页面 body 末尾）：
- *   <script src="手机端.js"></script>
+ *   <script src="mobile.js"></script>
  *
  * 依赖关系：
- *   手机端.js → 公共/scripts/common.js → prd-map.js + prd-reader.js
+ *   mobile.js → 公共/scripts/common.js → prd-map.js + prd-reader.js
  * ========================================
  */
 (function () {
@@ -22,15 +22,15 @@
   for (var i = 0; i < scripts.length; i++) {
     var src = scripts[i].getAttribute('src') || '';
     if (/手机端\.js/.test(src)) {
-      // src 形如 '手机端.js' 或 '../手机端/手机端.js'
+      // src 形如 'mobile.js' 或 '../mobile/mobile.js'
       // 目标：推导出 '../公共/scripts/common.js' 的路径前缀
       var idx = src.lastIndexOf('/');
       if (idx >= 0) {
-        // src 形如 '../手机端/手机端.js' → 前缀 '../'
-        var prefix = src.substring(0, idx + 1); // '../手机端/'
+        // src 形如 '../mobile/mobile.js' → 前缀 '../'
+        var prefix = src.substring(0, idx + 1); // '../mobile/'
         commonBase = prefix + '../公共/scripts/';
       } else {
-        // src 形如 '手机端.js'，说明页面在手机端目录下
+        // src 形如 'mobile.js'，说明页面在手机端目录下
         commonBase = '../公共/scripts/';
       }
       break;

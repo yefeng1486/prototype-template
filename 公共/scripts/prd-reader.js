@@ -184,7 +184,7 @@
     return 0;
   }
 
-  // 当前页面相对项目根目录的路径，如 '管理端/用户管理.html'
+  // 当前页面相对项目根目录的路径，如 'admin/用户管理.html'
   // 注意：file:// 协议下 window.location.pathname 中的中文会被 URL 编码，
   // 必须先 decodeURIComponent 再做路径匹配
   function getCurrentPagePath() {
@@ -202,7 +202,7 @@
 
     // 取最后 depth+1 个部分作为相对根目录的页面路径
     // depth=0 → 取最后1部分 'index.html'
-    // depth=1 → 取最后2部分 '管理端/用户管理.html'
+    // depth=1 → 取最后2部分 'admin/用户管理.html'
     return parts.slice(-(depth + 1)).join('/');
   }
 

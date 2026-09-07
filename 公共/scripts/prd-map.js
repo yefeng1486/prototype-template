@@ -32,25 +32,25 @@
 
 /**
  * 页面 → PRD 文档关联映射
- * key:   页面相对路径（相对于项目根目录），如 '管理端/用户管理.html'
+ * key:   页面相对路径（相对于项目根目录），如 'admin/用户管理.html'
  * value: 关联的文档数组，每项 { name?, file }
  *        name — 文档名称（可选，省略时自动从 file 解析文件名）
  *        file — .md 文件路径（相对于项目根目录）
  */
 var PRD_MAP = {
-  '管理端/用户管理.html': [
+  'admin/用户管理.html': [
     { name: '用户管理 PRD', file: 'prd/user-management.md' },
     { name: '新增用户功能 PRD', file: 'prd/user-create.md' }
   ],
-  '管理端/仪表盘.html': [
+  'admin/仪表盘.html': [
     { name: '仪表盘 PRD', file: 'prd/dashboard.md' },
     { file: 'README.md' },
     { name: '用户管理 PRD', file: 'prd/user-management.md' }
   ],
-  '用户端/商品列表.html': [
+  'user/商品列表.html': [
     { name: '商品列表 PRD', file: 'prd/product-list.md' }
   ],
-  '手机端/首页.html': [
+  'mobile/首页.html': [
     { name: '首页PRD', file: 'prd/product-list.md' }
   ],
 };
