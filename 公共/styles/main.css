@@ -53,7 +53,24 @@
 /* ========== Form — 统一 Web 标准控件 ========== */
 .form-group { margin-bottom: 16px; }
 .form-label { display: block; margin-bottom: 6px; font-size: var(--font-size-base); font-weight: var(--font-weight-medium); color: var(--color-text-primary); }
-.form-label .required { color: var(--color-danger); margin-left: 2px; }
+/* 必填项标记：label 加 .required 类即可，* 号由 ::before 生成（HTML 中无需写 <span>*</span>） */
+.form-label.required::before { content: ' *'; color: var(--color-danger); margin-right: 2px; }
+
+/* ===== 表单布局（一个配置切换） =====
+ * 默认：上下布局（label 在上）
+ * 左右布局：在 <form> 或任意容器上加 form-horizontal 类即可，整组表单生效，label 默认右对齐
+ * 可选微调：容器上定义 --form-label-width（label 固定宽度，配合右对齐实现列对齐）、--form-label-align（覆盖对齐方向）
+ */
+.form-horizontal .form-group { display: flex; align-items: flex-start; }
+.form-horizontal .form-label {
+  flex-shrink: 0; margin-bottom: 0; margin-right: 12px;
+  width: var(--form-label-width, 84px); text-align: var(--form-label-align, right);
+  line-height: 36px; /* 与单行输入框（36px）垂直居中 */
+}
+.form-horizontal .form-group:has(.form-textarea) .form-label,
+.form-horizontal .form-group:has(.char-counter-wrap > .form-textarea) .form-label {
+  line-height: normal; padding-top: 10px; /* 多行文本域：label 顶部对齐 */
+}
 
 /* 输入框 / 选择框 / 文本域 — 统一高度 36px, 精确 box-sizing */
 .form-input,

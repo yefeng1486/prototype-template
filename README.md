@@ -118,6 +118,8 @@ index.html（导航入口）
 >
 > **注意**：手机端使用独立的 `design-system.css`（iOS 风格变量），不引用公共设计系统；根目录 `index.html`、`登录.html` 无端 CSS，仍直接引入公共样式。
 
+> **表单布局切换**：默认上下布局（label 在输入框上方）。左右布局只需在 `<form>` 或任意容器上加一个 `form-horizontal` 类，整组表单生效，label 默认右对齐；可通过 `--form-label-width`（label 固定宽度，配合右对齐实现列对齐）/ `--form-label-align` 微调。必填项在 label 上加 `required` 类，`*` 号由 CSS `::after` 自动生成。
+
 ### 3. Font Awesome 图标库
 
 已本地化到 `公共/lib/font-awesome/`，完全离线可用：
