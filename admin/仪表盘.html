@@ -6,6 +6,10 @@
   <title>仪表盘</title>
   <link rel="stylesheet" href="admin.css">
   <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/data/mock/users.js"></script>
+  <script src="../公共/data/mock/products.js"></script>
+  <script src="../公共/data/mock/orders.js"></script>
+  <script src="../公共/data/mock/charts.js"></script>
   <script src="../公共/scripts/mock-api.js"></script>
   <script src="../公共/lib/echarts/echarts.min.js"></script>
 
@@ -205,7 +209,7 @@
         tooltip: { trigger: 'axis', formatter: function (p) { return p[0].axisValue + '<br/>' + p.map(function (s) { return s.marker + ' ' + s.seriesName + ': ¥' + Common.formatNumber(s.value); }).join('<br/>'); } },
         legend: { data: ['营收', '利润'], bottom: 0, textStyle: { fontSize: 12, color: C.textSec } },
         grid: { left: '3%', right: '4%', bottom: '14%', top: '8%', containLabel: true },
-        xAxis: { type: 'category', data: ['周一','周二','周三','周四','周五','周六','周日'], boundaryGap: false, axisLine: { lineStyle: { color: C.border } }, axisLabel: { color: C.textSec }, axisTick: { show: false } },
+        xAxis: { type: 'category', data: MOCK_DATA.charts.weekDays, boundaryGap: false, axisLine: { lineStyle: { color: C.border } }, axisLabel: { color: C.textSec }, axisTick: { show: false } },
         yAxis: { type: 'value', name: '¥', nameTextStyle: { color: C.textSec }, axisLabel: { formatter: function (v) { return (v / 1000).toFixed(0) + 'k'; }, color: C.textSec }, splitLine: { lineStyle: { color: C.splitLine } }, axisLine: { show: false }, axisTick: { show: false } },
         series: [
           {
@@ -214,14 +218,14 @@
             areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(37,99,235,0.25)' }, { offset: 1, color: 'rgba(37,99,235,0.02)' }]) },
             symbol: 'circle', symbolSize: 8,
             itemStyle: { color: C.primary, borderColor: '#fff', borderWidth: 2 },
-            data: [3200, 4100, 3800, 5200, 4800, 6800, 5900]
+            data: MOCK_DATA.charts.weekRevenue
           },
           {
             name: '利润', type: 'line', smooth: true,
             lineStyle: { width: 2, color: C.success, type: 'dashed' },
             symbol: 'diamond', symbolSize: 7,
             itemStyle: { color: C.success },
-            data: [960, 1230, 1140, 1560, 1440, 2040, 1770]
+            data: MOCK_DATA.charts.weekProfit
           }
         ]
       });
@@ -238,13 +242,10 @@
           label: { show: true, fontSize: 12, color: C.textSec, formatter: '{d}%' },
           labelLine: { length: 8, length2: 8 },
           emphasis: { label: { fontSize: 14, fontWeight: 'bold' }, scaleSize: 6 },
-          data: [
-            { value: 128, name: '待付款', itemStyle: { color: C.warning } },
-            { value: 256, name: '已付款', itemStyle: { color: C.info } },
-            { value: 189, name: '已发货', itemStyle: { color: C.primary } },
-            { value: 520, name: '已完成', itemStyle: { color: C.success } },
-            { value: 47,  name: '已取消', itemStyle: { color: C.danger } }
-          ]
+          data: MOCK_DATA.charts.orderStatus.map(function (d, i) {
+            var colors = [C.warning, C.info, C.primary, C.success, C.danger];
+            return Object.assign({}, d, { itemStyle: { color: colors[i] } });
+          })
         }]
       });
 
@@ -253,7 +254,7 @@
         tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' }, formatter: function (p) { return p[0].axisValue + '<br/>' + p.map(function (s) { return s.marker + ' ' + s.seriesName + ': ' + s.value + '件'; }).join('<br/>'); } },
         legend: { bottom: 0, textStyle: { fontSize: 12, color: C.textSec } },
         grid: { left: '3%', right: '4%', bottom: '14%', top: '8%', containLabel: true },
-        xAxis: { type: 'category', data: ['电子产品','服装鞋包','食品生鲜','美妆个护','家居日用','运动户外'], axisLine: { lineStyle: { color: C.border } }, axisLabel: { color: C.textSec, fontSize: 11, interval: 0 }, axisTick: { show: false } },
+        xAxis: { type: 'category', data: MOCK_DATA.charts.categorySales.categories, axisLine: { lineStyle: { color: C.border } }, axisLabel: { color: C.textSec, fontSize: 11, interval: 0 }, axisTick: { show: false } },
         yAxis: { type: 'value', axisLabel: { color: C.textSec }, splitLine: { lineStyle: { color: C.splitLine } }, axisLine: { show: false }, axisTick: { show: false } },
         series: [
           {
@@ -261,11 +262,11 @@
               borderRadius: [4, 4, 0, 0],
               color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: C.primary }, { offset: 1, color: C.primaryLight }])
             },
-            data: [1820, 1350, 980, 760, 640, 420]
+            data: MOCK_DATA.charts.categorySales.currentMonth
           },
           {
             name: '上月销量', type: 'bar', barWidth: '35%', itemStyle: { borderRadius: [4, 4, 0, 0], color: '#DBEAFE' },
-            data: [1650, 1200, 1050, 680, 590, 380]
+            data: MOCK_DATA.charts.categorySales.lastMonth
           }
         ]
       });
@@ -280,14 +281,10 @@
           itemStyle: { borderRadius: 5 },
           label: { show: true, fontSize: 11, color: C.textSec, formatter: '{b}\n{d}%' },
           labelLine: { length: 6, length2: 8 },
-          data: [
-            { value: 4200, name: '搜索引擎', itemStyle: { color: C.primary } },
-            { value: 2800, name: '直接访问', itemStyle: { color: C.success } },
-            { value: 2100, name: '社交媒体', itemStyle: { color: C.warning } },
-            { value: 1500, name: '广告推广', itemStyle: { color: C.purple } },
-            { value: 900,  name: '外部链接', itemStyle: { color: C.teal } },
-            { value: 500,  name: '其他',     itemStyle: { color: C.pink } }
-          ]
+          data: MOCK_DATA.charts.trafficSources.map(function (d, i) {
+            var colors = [C.primary, C.success, C.warning, C.purple, C.teal, C.pink];
+            return Object.assign({}, d, { itemStyle: { color: colors[i] } });
+          })
         }]
       });
 

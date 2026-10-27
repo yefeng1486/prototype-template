@@ -37,8 +37,13 @@ prototype-template/
 │   │   ├── prd-map.js                  → ★ PRD 文档与 HTML 页面直接关联映射（每项 { name, file }）
 │   │   ├── event-bus.js                → 跨组件事件总线
 │   │   ├── state-manager.js            → 轻量状态管理
-│   │   └── mock-api.js                 → Mock 数据接口（数据内嵌，兼容 file://）
-│   └── data/mock/                      → JSON 数据文件（users / products / orders）
+│   │   └── mock-api.js                 → Mock 数据接口（只提供接口，数据来自 data/mock/ 按数据域拆分的 .js 文件）
+│   └── data/mock/                      → ★ 页面样例数据统一管理（按数据域一域一文件，禁止在 HTML 内内嵌样例数据）
+│           ├── users.js                → 用户样例数据
+│           ├── products.js             → 商品样例数据
+│           ├── orders.js               → 订单样例数据
+│           ├── activities.js           → 活动样例数据
+│           └── charts.js               → 图表样例数据集
 │
 ├── admin/                              → 管理端（后台管理）
 │   ├── index.html                      → 框架页（浅色侧边栏 + 顶栏 + iframe）
@@ -296,9 +301,23 @@ Common.bindCharCounter('#username', { maxLength: 20, hideWhenEmpty: true });
 | `maxLength` | number | 上限，缺省时读取 input 的 `maxlength` 属性 |
 | `hideWhenEmpty` | boolean | 输入为空时隐藏计数器，默认 false |
 
-### 6. MockAPI 数据接口
+### 6. Mock 数据与数据接口
 
-数据内嵌在 `mock-api.js` 中（兼容 `file://` 协议），模拟网络延迟和分页：
+> **★ 样例数据统一管理规则**：页面用到的所有样例数据统一放在 `公共/data/mock/` 目录维护（.js 格式，`<script>` 标签引入，`file://` 协议双击打开也能加载），**禁止在 HTML 页面内单独内嵌样例数据**。按数据域拆分、**一域一文件**（用户 / 商品 / 订单 / 活动分属不同文件），页面按需引入所需的数据域；不同页面共用同一份数据，修改一处全局生效。
+
+**数据文件**：`公共/data/mock/`，每个文件为全局 `MOCK_DATA` 挂载一个字段（同一命名空间，页面读取方式统一为 `MOCK_DATA.xxx`）：
+
+| 文件 | 挂载字段 | 说明 | 引入场景 |
+|------|------|------|------|
+| `users.js` | `MOCK_DATA.users` | 用户列表 | 使用 MockAPI 的页面（核心域） |
+| `products.js` | `MOCK_DATA.products` | 商品列表 | 使用 MockAPI 的页面（核心域） |
+| `orders.js` | `MOCK_DATA.orders` | 订单列表 | 使用 MockAPI 的页面（核心域） |
+| `activities.js` | `MOCK_DATA.activities` | 活动列表 | 仅活动相关页面（如运营端活动管理） |
+| `charts.js` | `MOCK_DATA.charts` | 图表数据集（周维度序列 / 饼图 / 漏斗 / 分类销量等，只存数据不含配色） | 仅图表页面（仪表盘、数据看板） |
+
+**新增数据域的判定**：先看语义是否属于已有数据域——属于则复用已有文件（在对应文件里加字段）；是全新业务域（如优惠券、物流）则**新建一个文件**（如 `coupons.js`），复制现有文件骨架，为 `MOCK_DATA` 挂载新字段。图表配色等展示样式由页面自行补充（数据与样式分离）。
+
+**接口层**：`公共/scripts/mock-api.js` 从 `MOCK_DATA` 读取数据，模拟网络延迟、分页、过滤：
 
 ```js
 MockAPI.getUsers({ page: 1, pageSize: 10, keyword: '张' }).then(function(res) {
@@ -308,6 +327,15 @@ MockAPI.getProducts({ category: '智能穿戴' }).then(...);
 MockAPI.getOrders({ status: 'pending' }).then(...);
 MockAPI.getStats().then(...);
 MockAPI.raw.users  // 原始全量数据
+```
+
+**页面引入顺序**（数据文件在前，mock-api.js 在后；按页面实际用到的数据域引入）：
+
+```html
+<script src="../公共/data/mock/users.js"></script>
+<script src="../公共/data/mock/products.js"></script>
+<script src="../公共/data/mock/orders.js"></script>
+<script src="../公共/scripts/mock-api.js"></script>
 ```
 
 ### 7. PRD 文档阅读器
@@ -400,8 +428,12 @@ PRD_MAP['admin/另一页面.html'] = [
    ```html
    <link rel="stylesheet" href="admin.css">
    <script src="../公共/scripts/common.js"></script>
+   <script src="../公共/data/mock/users.js"></script>
+   <script src="../公共/data/mock/products.js"></script>
+   <script src="../公共/data/mock/orders.js"></script>
    <script src="../公共/scripts/mock-api.js"></script>
    ```
+   > 数据文件按页面实际用到的数据域按需引入（见第 6 节「Mock 数据与数据接口」）。
 3. 如需图表，在 `</body>` 前引入 ECharts：
    ```html
    <script src="../公共/lib/echarts/echarts.min.js"></script>

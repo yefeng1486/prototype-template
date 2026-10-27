@@ -6,6 +6,10 @@
   <title>数据看板</title>
   <link rel="stylesheet" href="operation.css">
   <script src="../公共/scripts/common.js"></script>
+  <script src="../公共/data/mock/users.js"></script>
+  <script src="../公共/data/mock/products.js"></script>
+  <script src="../公共/data/mock/orders.js"></script>
+  <script src="../公共/data/mock/charts.js"></script>
   <script src="../公共/scripts/mock-api.js"></script>
   <script src="../公共/lib/echarts/echarts.min.js"></script>
 
@@ -196,9 +200,9 @@
       });
 
       /* ---- 1. 销售趋势：柱状图 + 折线图 ---- */
-      var days = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-      var salesValues = [3200, 4100, 3800, 5200, 4800, 6800, 5900];
-      var orderValues = [28, 35, 32, 45, 40, 58, 49];
+      var days = MOCK_DATA.charts.weekDays;
+      var salesValues = MOCK_DATA.charts.weekRevenue;
+      var orderValues = MOCK_DATA.charts.weekOrderCount;
 
       regChart(document.getElementById('salesChart'), {
         tooltip: {
@@ -260,12 +264,10 @@
           label: { show: true, fontSize: 12, color: C.textSec, formatter: '{d}%' },
           labelLine: { length: 8, length2: 8 },
           emphasis: { label: { fontSize: 14, fontWeight: 'bold' }, scaleSize: 6 },
-          data: [
-            { value: 350, name: '智能穿戴', itemStyle: { color: C.primary } },
-            { value: 250, name: '电脑外设', itemStyle: { color: C.success } },
-            { value: 200, name: '音频设备', itemStyle: { color: C.warning } },
-            { value: 150, name: '其他',     itemStyle: { color: C.purple } }
-          ]
+          data: MOCK_DATA.charts.categoryShare.map(function (d, i) {
+            var colors = [C.primary, C.success, C.warning, C.purple];
+            return Object.assign({}, d, { itemStyle: { color: colors[i] } });
+          })
         }]
       });
 
@@ -281,13 +283,10 @@
           labelLine: { show: false },
           itemStyle: { borderWidth: 0 },
           emphasis: { label: { fontSize: 15 } },
-          data: [
-            { value: 12000, name: '浏览活动', itemStyle: { color: C.primary } },
-            { value: 5800,  name: '点击商品', itemStyle: { color: C.info } },
-            { value: 3200,  name: '加入购物车', itemStyle: { color: C.teal } },
-            { value: 1850,  name: '提交订单', itemStyle: { color: C.warning } },
-            { value: 1420,  name: '支付完成', itemStyle: { color: C.success } }
-          ]
+          data: MOCK_DATA.charts.funnel.map(function (d, i) {
+            var colors = [C.primary, C.info, C.teal, C.warning, C.success];
+            return Object.assign({}, d, { itemStyle: { color: colors[i] } });
+          })
         }]
       });
 
@@ -305,7 +304,7 @@
             areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(139,92,246,0.25)' }, { offset: 1, color: 'rgba(139,92,246,0.02)' }]) },
             symbol: 'circle', symbolSize: 6,
             itemStyle: { color: C.purple, borderColor: '#fff', borderWidth: 2 },
-            data: [120, 145, 132, 168, 155, 198, 182]
+            data: MOCK_DATA.charts.userGrowth.newUsers
           },
           {
             name: '活跃用户', type: 'line', smooth: true,
@@ -313,7 +312,7 @@
             areaStyle: { color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{ offset: 0, color: 'rgba(14,165,233,0.20)' }, { offset: 1, color: 'rgba(14,165,233,0.02)' }]) },
             symbol: 'circle', symbolSize: 6,
             itemStyle: { color: C.sky, borderColor: '#fff', borderWidth: 2 },
-            data: [820, 910, 880, 1050, 980, 1280, 1150]
+            data: MOCK_DATA.charts.userGrowth.activeUsers
           }
         ]
       });
